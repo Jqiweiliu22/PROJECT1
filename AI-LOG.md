@@ -110,3 +110,32 @@ Used the suggested test code without changes and ran it locally.
 ### Current limitations
 These tests cover basic title search only.
 Dataset validation and later search features need additional tests.
+## Entry 5: Dataset validation tests
+
+### Purpose
+Check that the dataset loader accepts valid data and rejects
+invalid structures, missing identifiers and duplicate IDs.
+
+### AI assistance
+AI suggested nine DatasetTests using temporary JSON files.
+The original collection dataset was not modified.
+
+### Review and verification
+Ran locally:
+
+py -m unittest discover -s tests -p test_core.py -v
+
+The latest run passed all 16 tests:
+- 7 search tests.
+- 9 dataset loading and validation tests.
+
+An earlier run failed. After editing the test file,
+the tests were rerun successfully.
+
+### Changes made by the team
+Added DatasetTests to tests/test_core.py and ran the tests locally.
+
+### Current limitations
+The tests do not yet cover all collection fields, missing files
+or malformed JSON. Image availability and permissions remain
+to be checked.

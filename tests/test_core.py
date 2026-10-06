@@ -1,3 +1,9 @@
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from collection_core import load_dataset, search_records
 import unittest
 
 from collection_core import search_records
@@ -57,6 +63,89 @@ class SearchTests(unittest.TestCase):
         search_records(self.records, "basket")
 
         self.assertEqual(self.records, original)
+class DatasetTests(unittest.TestCase):
+    def setUp(self):
+        self.temp_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp_directory.cleanup)
+
+        self.path = Path(self.temp_directory.name) / "test_data.json"
+
+        self.dataset = {
+            "metadata": {"title": "Test dataset"},
+            "records": [
+                {"id": "1", "title": "Test item"}
+            ],
+        }
+
+    def write_dataset(self, dataset):
+        with open(self.path, "w", encoding="utf-8") as file:
+            json.dump(dataset, file)
+
+    def test_valid_dataset_loads(self):
+        self.write_dataset(self.dataset)
+
+        metadata, records = load_dataset(self.path)
+
+        self.assertEqual(metadata, self.dataset["metadata"])
+        self.assertEqual(records, self.dataset["records"])
+
+    def test_empty_records_are_allowed(self):
+        self.dataset["records"] = []
+        self.write_dataset(self.dataset)
+
+        metadata, records = load_dataset(self.path)
+
+        self.assertEqual(records, [])
+
+    def test_rejects_invalid_outer_structure(self):
+        self.write_dataset([])
+
+        with self.assertRaises(ValueError):
+            load_dataset(self.path)
+
+    def test_rejects_missing_metadata(self):
+        del self.dataset["metadata"]
+        self.write_dataset(self.dataset)
+
+        with self.assertRaises(ValueError):
+            load_dataset(self.path)
+
+    def test_rejects_invalid_records_type(self):
+        self.dataset["records"] = {}
+        self.write_dataset(self.dataset)
+
+        with self.assertRaises(ValueError):
+            load_dataset(self.path)
+
+    def test_rejects_non_object_record(self):
+        self.dataset["records"] = ["invalid record"]
+        self.write_dataset(self.dataset)
+
+        with self.assertRaises(ValueError):
+            load_dataset(self.path)
+
+    def test_rejects_missing_id(self):
+        del self.dataset["records"][0]["id"]
+        self.write_dataset(self.dataset)
+
+        with self.assertRaises(ValueError):
+            load_dataset(self.path)
+
+    def test_rejects_blank_title(self):
+        self.dataset["records"][0]["title"] = "   "
+        self.write_dataset(self.dataset)
+
+        with self.assertRaises(ValueError):
+            load_dataset(self.path)
+
+    def test_rejects_duplicate_ids(self):
+        self.dataset["records"].append(
+            {"id": "1", "title": "Another item"}
+        )
+        self.write_dataset(self.dataset)
+
+        with self.assertRaises(ValueError):
+            load_dataset(self.path)
 
 
 if __name__ == "__main__":
