@@ -166,3 +166,34 @@ multi-field search and added the two tests.
 ### Current limitations
 Search treats the query as a single phrase.
 Relevance ranking is not yet implemented.
+## Entry 7: Multi-keyword search and relevance ranking
+
+### Purpose
+Support multiple query words and rank matching records by relevance.
+
+### AI assistance
+AI suggested splitting queries into words, requiring every word
+to match, and calculating scores using field weights:
+title 8, category 4, materials 3, places 2,
+collection 1, date 1 and source_name 1.
+
+AI also suggested three additional search tests.
+
+### Review and verification
+Ran locally:
+
+py -m unittest discover -s tests -p test_core.py -v
+
+All 21 tests passed. The new tests confirmed:
+- Every query word must match.
+- Words can match different fields.
+- A title match ranks above a material match.
+
+### Changes made by the team
+Added the suggested search algorithm and three tests,
+then ran the complete core test suite locally.
+
+### Current limitations
+Matching uses substrings rather than whole words.
+The field weights are application design choices.
+Filtering, alternative sorting and pagination are not yet implemented.

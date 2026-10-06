@@ -93,6 +93,50 @@ class SearchTests(unittest.TestCase):
         results = search_records([record], "basket")
 
         self.assertEqual(results, [record])
+    def test_all_query_words_must_match(self):
+        records = [
+            {"id": "1", "title": "Wooden basket"},
+            {"id": "2", "title": "Wooden tool"},
+            {"id": "3", "title": "Metal basket"},
+        ]
+
+        results = search_records(records, "wood basket")
+
+        self.assertEqual(
+            [record["id"] for record in results],
+            ["1"],
+        )
+
+    def test_query_words_can_match_different_fields(self):
+        record = {
+            "id": "1",
+            "title": "Basket",
+            "materials": ["Wood"],
+        }
+
+        results = search_records([record], "wood basket")
+
+        self.assertEqual(results, [record])
+
+    def test_title_match_ranks_above_material_match(self):
+        records = [
+            {
+                "id": "1",
+                "title": "Example item",
+                "materials": ["Wood"],
+            },
+            {
+                "id": "2",
+                "title": "Wooden basket",
+            },
+        ]
+
+        results = search_records(records, "wood")
+
+        self.assertEqual(
+            [record["id"] for record in results],
+            ["2", "1"],
+        )
 class DatasetTests(unittest.TestCase):
     def setUp(self):
         self.temp_directory = tempfile.TemporaryDirectory()

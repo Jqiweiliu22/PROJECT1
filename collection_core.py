@@ -46,32 +46,53 @@ def load_dataset(path):
 
     return metadata, records
 def search_records(records, query):
-    """Search collection fields without changing the original records."""
-    keyword = query.strip().lower()
+    """Match every query word and rank results by field weights."""
+    tokens = query.strip().lower().split()
 
-    if keyword == "":
+    if not tokens:
         return records.copy()
 
-    results = []
+    field_weights = [
+        ("title", 8),
+        ("category", 4),
+        ("materials", 3),
+        ("places", 2),
+        ("collection", 1),
+        ("date", 1),
+        ("source_name", 1),
+    ]
+
+    scored_results = []
 
     for record in records:
-        text_parts = []
+        score = 0
+        matches_all = True
 
-        for field in (
-            "title",
-            "category",
-            "collection",
-            "date",
-            "source_name",
-        ):
-            text_parts.append(record.get(field, ""))
+        for token in tokens:
+            token_score = 0
 
-        for field in ("materials", "places"):
-            text_parts.extend(record.get(field, []))
+            for field, weight in field_weights:
+                value = record.get(field, "")
 
-        searchable_text = " ".join(text_parts).lower()
+                if isinstance(value, list):
+                    value = " ".join(value)
 
-        if keyword in searchable_text:
-            results.append(record)
+                if token in value.lower():
+                    token_score += weight
 
-    return results
+            if token_score == 0:
+                matches_all = False
+                break
+
+            score += token_score
+
+        if matches_all:
+            scored_results.append((score, record))
+
+    # Higher scores come first. Equal scores keep their original order.
+    scored_results.sort(
+        key=lambda item: item[0],
+        reverse=True,
+    )
+
+    return [record for score, record in scored_results]
