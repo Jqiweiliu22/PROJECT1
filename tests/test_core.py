@@ -63,6 +63,36 @@ class SearchTests(unittest.TestCase):
         search_records(self.records, "basket")
 
         self.assertEqual(self.records, original)
+    def test_search_matches_each_additional_field(self):
+        examples = [
+            {"category": "basket"},
+            {"materials": ["Wood", "basket"]},
+            {"places": ["basket"]},
+            {"collection": "basket"},
+            {"date": "basket"},
+            {"source_name": "basket"},
+        ]
+
+        for fields in examples:
+            with self.subTest(fields=fields):
+                record = {"id": "1", "title": "Example item"}
+                record.update(fields)
+
+                results = search_records([record], "basket")
+
+                self.assertEqual(results, [record])
+
+    def test_search_returns_record_only_once(self):
+        record = {
+            "id": "1",
+            "title": "Wooden basket",
+            "category": "Basket",
+            "materials": ["Wood", "Basket"],
+        }
+
+        results = search_records([record], "basket")
+
+        self.assertEqual(results, [record])
 class DatasetTests(unittest.TestCase):
     def setUp(self):
         self.temp_directory = tempfile.TemporaryDirectory()

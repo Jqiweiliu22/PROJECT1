@@ -46,7 +46,7 @@ def load_dataset(path):
 
     return metadata, records
 def search_records(records, query):
-    """Search collection titles without changing the original records."""
+    """Search collection fields without changing the original records."""
     keyword = query.strip().lower()
 
     if keyword == "":
@@ -55,9 +55,23 @@ def search_records(records, query):
     results = []
 
     for record in records:
-        title = record["title"].lower()
+        text_parts = []
 
-        if keyword in title:
+        for field in (
+            "title",
+            "category",
+            "collection",
+            "date",
+            "source_name",
+        ):
+            text_parts.append(record.get(field, ""))
+
+        for field in ("materials", "places"):
+            text_parts.extend(record.get(field, []))
+
+        searchable_text = " ".join(text_parts).lower()
+
+        if keyword in searchable_text:
             results.append(record)
 
     return results

@@ -139,3 +139,30 @@ Added DatasetTests to tests/test_core.py and ran the tests locally.
 The tests do not yet cover all collection fields, missing files
 or malformed JSON. Image availability and permissions remain
 to be checked.
+## Entry 6: Search across multiple fields
+
+### Purpose
+Expand keyword search beyond collection titles.
+
+### AI assistance
+AI suggested searching seven fields: title, category, materials,
+places, collection, date and source_name.
+
+AI also suggested tests for matching each additional field and
+returning a record only once when multiple fields match.
+
+### Review and verification
+Ran locally:
+
+py -m unittest discover -s tests -p test_core.py -v
+
+All 18 tests passed, including the two new search tests.
+The existing search and dataset tests continued to pass.
+
+### Changes made by the team
+Replaced the title-only search function with the suggested
+multi-field search and added the two tests.
+
+### Current limitations
+Search treats the query as a single phrase.
+Relevance ranking is not yet implemented.
