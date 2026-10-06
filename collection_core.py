@@ -45,3 +45,19 @@ def load_dataset(path):
         seen_ids.add(record_id)
 
     return metadata, records
+def search_records(records, query):
+    """Search collection titles without changing the original records."""
+    keyword = query.strip().lower()
+
+    if keyword == "":
+        return records.copy()
+
+    results = []
+
+    for record in records:
+        title = record["title"].lower()
+
+        if keyword in title:
+            results.append(record)
+
+    return results
