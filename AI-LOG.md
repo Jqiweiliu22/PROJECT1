@@ -82,3 +82,31 @@ out of Entry 1, removed the duplicated heading, and recorded verification.
 ### Current limitations
 Search currently checks titles only. Other search fields, relevance
 ranking and automated search tests are not yet implemented.
+## Entry 4: Automated search tests
+
+### Purpose
+Verify basic title search behaviour with automated tests.
+
+### AI assistance
+AI suggested seven unittest cases in tests/test_core.py.
+
+### Review and verification
+Ran the following command locally:
+
+py -m unittest discover -s tests -p test_core.py -v
+
+All seven tests passed. The tests checked:
+- Keyword matching.
+- Case-insensitive search.
+- Surrounding whitespace.
+- Empty queries.
+- Unmatched queries.
+- Empty datasets.
+- Preservation of the original records.
+
+### Changes made by the team
+Used the suggested test code without changes and ran it locally.
+
+### Current limitations
+These tests cover basic title search only.
+Dataset validation and later search features need additional tests.
