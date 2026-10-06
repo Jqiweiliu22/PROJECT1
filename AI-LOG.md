@@ -225,3 +225,19 @@ and reran the tests successfully.
 
 ### Current limitations
 Alternative sorting and pagination are not yet implemented.
+## Entry 10: Sorting collection results
+
+### Purpose
+Support relevance, title, oldest and newest sorting.
+
+### AI assistance
+AI provided and applied the sorting function and four automated tests.
+
+### Review and verification
+I ran the test suite locally and confirmed that all 34 tests passed.
+
+### Changes made by the team
+Integrated AI-assisted sorting into the project and verified it locally.
+
+### Current limitations
+Pagination and collection statistics are not yet implemented.

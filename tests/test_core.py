@@ -7,10 +7,8 @@ from collection_core import (
     load_dataset,
     search_records,
     filter_records,
+    sort_records,
 )
-import unittest
-
-from collection_core import search_records
 
 
 class SearchTests(unittest.TestCase):
@@ -241,6 +239,48 @@ class SearchTests(unittest.TestCase):
             with self.subTest(limits=limits):
                 with self.assertRaises(ValueError):
                     filter_records([], **limits)
+
+
+    def test_title_sort_ignores_case_and_preserves_input(self):
+        records = [
+            {"id": "1", "title": "zebra"},
+            {"id": "2", "title": "Apple"},
+            {"id": "3", "title": "basket"},
+        ]
+        original = [record.copy() for record in records]
+        results = sort_records(records, "title")
+        self.assertEqual([record["id"] for record in results], ["2", "3", "1"])
+        self.assertEqual(records, original)
+
+    def test_year_sort_keeps_unknown_years_last(self):
+        records = [
+            {"id": "1", "year": None},
+            {"id": "2", "year": 1950},
+            {"id": "3", "year": 1900},
+            {"id": "4"},
+        ]
+        oldest = sort_records(records, "oldest")
+        newest = sort_records(records, "newest")
+        self.assertEqual([record["id"] for record in oldest], ["3", "2", "1", "4"])
+        self.assertEqual([record["id"] for record in newest], ["2", "3", "1", "4"])
+        self.assertEqual([record["id"] for record in records], ["1", "2", "3", "4"])
+
+    def test_relevance_sort_preserves_search_ranking(self):
+        records = [
+            {"id": "1", "title": "Item", "materials": ["Wood"]},
+            {"id": "2", "title": "Wooden basket"},
+        ]
+        ranked = search_records(records, "wood")
+        results = sort_records(ranked, "relevance")
+        self.assertEqual([record["id"] for record in results], ["2", "1"])
+        self.assertIsNot(results, ranked)
+
+    def test_sort_empty_records_and_invalid_option(self):
+        for option in ("relevance", "title", "oldest", "newest"):
+            with self.subTest(option=option):
+                self.assertEqual(sort_records([], option), [])
+        with self.assertRaises(ValueError):
+            sort_records([], "invalid")
 
 
 class DatasetTests(unittest.TestCase):

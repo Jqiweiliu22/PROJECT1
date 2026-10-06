@@ -96,6 +96,8 @@ def search_records(records, query):
     )
 
     return [record for score, record in scored_results]
+
+
 def filter_records(
     records, category="", source_name="", start_year=None, end_year=None
 ):
@@ -143,3 +145,31 @@ def filter_records(
         results.append(record)
 
     return results
+
+
+def sort_records(records, sort_by="relevance"):
+    """Return a new list ordered by relevance, title or starting year."""
+    if sort_by == "relevance":
+        return records.copy()
+
+    if sort_by == "title":
+        return sorted(records, key=lambda record: record["title"].lower())
+
+    if sort_by not in ("oldest", "newest"):
+        raise ValueError("Unknown sort option.")
+
+    known_years = []
+    unknown_years = []
+
+    for record in records:
+        if record.get("year") is None:
+            unknown_years.append(record)
+        else:
+            known_years.append(record)
+
+    known_years.sort(
+        key=lambda record: record["year"],
+        reverse=(sort_by == "newest"),
+    )
+
+    return known_years + unknown_years
