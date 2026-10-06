@@ -197,3 +197,31 @@ then ran the complete core test suite locally.
 Matching uses substrings rather than whole words.
 The field weights are application design choices.
 Filtering, alternative sorting and pagination are not yet implemented.
+## Entry 9: Year range filtering
+
+### Purpose
+Filter collection records by overlapping year ranges.
+
+### AI assistance
+At my request, Codex directly added year filtering to
+collection_core.py and five tests to tests/test_core.py.
+
+The function includes boundary years, supports one-sided limits,
+excludes unknown years when a year filter is active, and rejects
+invalid year limits.
+
+### Review and verification
+Codex ran the updated tests successfully.
+I then ran the following command locally:
+
+py -m unittest discover -s tests -p test_core.py -v
+
+All 30 tests passed.
+
+### Changes made by the team
+An unsaved editor version contained an incomplete function
+definition. I reverted that unsaved version to the saved file
+and reran the tests successfully.
+
+### Current limitations
+Alternative sorting and pagination are not yet implemented.

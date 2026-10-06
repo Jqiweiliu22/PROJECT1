@@ -96,10 +96,23 @@ def search_records(records, query):
     )
 
     return [record for score, record in scored_results]
-def filter_records(records, category="", source_name=""):
-    """Filter records by exact category and source name."""
+def filter_records(
+    records, category="", source_name="", start_year=None, end_year=None
+):
+    """Filter by category, source and overlapping year ranges."""
     category = category.strip().lower()
     source_name = source_name.strip().lower()
+
+    for value in (start_year, end_year):
+        if value is not None and type(value) is not int:
+            raise ValueError("Year limits must be integers or None.")
+
+    if (
+        start_year is not None
+        and end_year is not None
+        and start_year > end_year
+    ):
+        raise ValueError("Start year must not exceed end year.")
 
     results = []
 
@@ -112,6 +125,20 @@ def filter_records(records, category="", source_name=""):
 
         if source_name and record_source != source_name:
             continue
+
+        if start_year is not None or end_year is not None:
+            record_start = record.get("year")
+            if record_start is None:
+                continue
+
+            record_end = record.get("year_end")
+            if record_end is None:
+                record_end = record_start
+
+            if start_year is not None and record_end < start_year:
+                continue
+            if end_year is not None and record_start > end_year:
+                continue
 
         results.append(record)
 

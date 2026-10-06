@@ -193,6 +193,56 @@ class SearchTests(unittest.TestCase):
         self.assertIsNot(results, self.records)
 
 
+    def test_year_filter_includes_boundary_years(self):
+        records = [
+            {"id": "1", "year": 1899},
+            {"id": "2", "year": 1900},
+            {"id": "3", "year": 1950},
+            {"id": "4", "year": 1951},
+        ]
+        results = filter_records(records, start_year=1900, end_year=1950)
+        self.assertEqual([record["id"] for record in results], ["2", "3"])
+
+    def test_year_filter_matches_overlapping_ranges(self):
+        records = [
+            {"id": "1", "year": 1890, "year_end": 1910},
+            {"id": "2", "year": 1880, "year_end": 1899},
+            {"id": "3", "year": 1921, "year_end": 1930},
+        ]
+        results = filter_records(records, start_year=1900, end_year=1920)
+        self.assertEqual([record["id"] for record in results], ["1"])
+
+    def test_year_filter_excludes_unknown_years(self):
+        records = [
+            {"id": "1", "year": None},
+            {"id": "2", "year": 1900, "year_end": None},
+        ]
+        results = filter_records(records, start_year=1900)
+        self.assertEqual([record["id"] for record in results], ["2"])
+
+    def test_year_filter_supports_one_boundary(self):
+        records = [
+            {"id": "1", "year": 1899},
+            {"id": "2", "year": 1900},
+            {"id": "3", "year": 1901},
+        ]
+        lower_results = filter_records(records, start_year=1900)
+        upper_results = filter_records(records, end_year=1900)
+        self.assertEqual([record["id"] for record in lower_results], ["2", "3"])
+        self.assertEqual([record["id"] for record in upper_results], ["1", "2"])
+
+    def test_year_filter_rejects_invalid_limits(self):
+        invalid_limits = [
+            {"start_year": 1950, "end_year": 1900},
+            {"start_year": "1900"},
+            {"end_year": True},
+        ]
+        for limits in invalid_limits:
+            with self.subTest(limits=limits):
+                with self.assertRaises(ValueError):
+                    filter_records([], **limits)
+
+
 class DatasetTests(unittest.TestCase):
     def setUp(self):
         self.temp_directory = tempfile.TemporaryDirectory()
