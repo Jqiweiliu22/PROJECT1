@@ -96,3 +96,23 @@ def search_records(records, query):
     )
 
     return [record for score, record in scored_results]
+def filter_records(records, category="", source_name=""):
+    """Filter records by exact category and source name."""
+    category = category.strip().lower()
+    source_name = source_name.strip().lower()
+
+    results = []
+
+    for record in records:
+        record_category = record.get("category", "").strip().lower()
+        record_source = record.get("source_name", "").strip().lower()
+
+        if category and record_category != category:
+            continue
+
+        if source_name and record_source != source_name:
+            continue
+
+        results.append(record)
+
+    return results

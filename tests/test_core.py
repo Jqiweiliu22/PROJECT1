@@ -3,7 +3,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from collection_core import load_dataset, search_records
+from collection_core import (
+    load_dataset,
+    search_records,
+    filter_records,
+)
 import unittest
 
 from collection_core import search_records
@@ -137,6 +141,58 @@ class SearchTests(unittest.TestCase):
             [record["id"] for record in results],
             ["2", "1"],
         )
+    def test_filter_by_category(self):
+        records = [
+            {"id": "1", "category": "Tools"},
+            {"id": "2", "category": "Advertisements"},
+            {"id": "3", "category": "Tools"},
+        ]
+
+        results = filter_records(records, category=" tools ")
+
+        self.assertEqual(
+            [record["id"] for record in results],
+            ["1", "3"],
+        )
+
+    def test_filter_by_source(self):
+        records = [
+            {"id": "1", "source_name": "Museum"},
+            {"id": "2", "source_name": "Library"},
+        ]
+
+        results = filter_records(records, source_name="library")
+
+        self.assertEqual(
+            [record["id"] for record in results],
+            ["2"],
+        )
+
+    def test_filter_requires_both_conditions(self):
+        records = [
+            {"id": "1", "category": "Tools", "source_name": "Museum"},
+            {"id": "2", "category": "Tools", "source_name": "Library"},
+            {"id": "3", "category": "Art", "source_name": "Museum"},
+        ]
+
+        results = filter_records(
+            records,
+            category="Tools",
+            source_name="Museum",
+        )
+
+        self.assertEqual(
+            [record["id"] for record in results],
+            ["1"],
+        )
+
+    def test_filter_without_conditions_preserves_order(self):
+        results = filter_records(self.records)
+
+        self.assertEqual(results, self.records)
+        self.assertIsNot(results, self.records)
+
+
 class DatasetTests(unittest.TestCase):
     def setUp(self):
         self.temp_directory = tempfile.TemporaryDirectory()
