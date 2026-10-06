@@ -1,10 +1,6 @@
-import json
+from collection_core import load_dataset
 
-with open("data/collections.json", encoding="utf-8") as file:
-    dataset = json.load(file)
-
-metadata = dataset["metadata"]
-records = dataset["records"]
+metadata, records = load_dataset("data/collections.json")
 
 print("Dataset:", metadata["title"])
 print("Total records:", len(records))
