@@ -208,6 +208,40 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(self.records, original)
 
 
+class SearchBoundaryTests(unittest.TestCase):
+    def test_each_search_field_can_match_independently(self):
+        for field, value, expected in (
+                ("title", "needle", 8), ("category", "needle", 4),
+                ("materials", ["needle"], 3), ("places", ["needle"], 2),
+                ("collection", "needle", 1), ("date", "needle", 1)):
+            with self.subTest(field=field):
+                record = make_record(**{field: value})
+                self.assertEqual(relevance_score(record, ["needle"]), expected)
+                self.assertEqual(query_records([record], {"q": "needle"})["total"], 1)
+
+    def test_punctuation_only_query_matches_complete_catalogue(self):
+        records = [make_record("b"), make_record("a")]
+        self.assertEqual(tokenize("... ! ?"), [])
+        self.assertEqual(relevance_score(records[0], []), 0)
+        result = query_records(records, {"q": "... ! ?"})
+        self.assertEqual(result["total"], 2)
+        self.assertEqual([record["id"] for record in result["items"]], ["a", "b"])
+
+    def test_unsearched_description_does_not_supply_missing_token(self):
+        record = make_record(title="needle", description="absent")
+        self.assertIsNone(relevance_score(record, ["needle", "absent"]))
+        self.assertEqual(query_records([record], {"q": "needle absent"})["total"], 0)
+
+    def test_decade_boundary_interval_and_unknown_dates(self):
+        records = [make_record("a", year=1899, year_end=1901),
+                   make_record("b", year=1900),
+                   make_record("c", year=None, date="1900", title="1900 sample")]
+        stats = query_records(records, {"page_size": 1})["stats"]
+        self.assertEqual((stats["total"], stats["dated"], stats["undated"]), (3, 2, 1))
+        self.assertEqual(stats["decades"], [{"label": "1890s", "count": 1},
+                                           {"label": "1900s", "count": 1}])
+
+
 class DatasetTests(unittest.TestCase):
     def load(self, payload):
         with tempfile.TemporaryDirectory() as folder:

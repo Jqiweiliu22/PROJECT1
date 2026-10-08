@@ -389,3 +389,22 @@ Adopted the core architecture needed for server integration.
 
 ### Current limitations
 Complete browser workflows and image loading still need checking.
+
+## Entry 15: Core testing
+
+### Purpose
+Check normal inputs, invalid inputs and boundary cases.
+
+### AI assistance
+AI helped add four core tests for individual search-field weights,
+punctuation-only queries, unmatched tokens and decade boundaries.
+
+### Review and verification
+AI ran all 34 core tests successfully. They cover dataset validation,
+search, filters, sorting, pagination and statistics.
+
+### Changes made by the team
+Added the boundary tests to our existing core test suite.
+
+### Current limitations
+Browser workflows, image loading and deployment still need checking.
