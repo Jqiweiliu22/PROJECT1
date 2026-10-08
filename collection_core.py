@@ -45,6 +45,31 @@ def load_dataset(path):
 
         seen_ids.add(record_id)
 
+        for field in ("category", "collection", "date", "source_name"):
+            if not isinstance(record.get(field, ""), str):
+                raise ValueError(f"Record {position}: {field} must be text.")
+
+        for field in ("materials", "places"):
+            values = record.get(field, [])
+            if not isinstance(values, list) or any(
+                not isinstance(value, str) for value in values
+            ):
+                raise ValueError(
+                    f"Record {position}: {field} must be a list of strings."
+                )
+
+        for field in ("year", "year_end"):
+            value = record.get(field)
+            if value is not None and type(value) is not int:
+                raise ValueError(
+                    f"Record {position}: {field} must be an integer or null."
+                )
+
+        year = record.get("year")
+        year_end = record.get("year_end")
+        if year_end is not None and (year is None or year_end < year):
+            raise ValueError(f"Record {position} has an invalid year range.")
+
     return metadata, records
 def search_records(records, query):
     """Match every query word and rank results by field weights."""

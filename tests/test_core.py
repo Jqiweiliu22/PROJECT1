@@ -394,6 +394,58 @@ class DatasetTests(unittest.TestCase):
         with open(self.path, "w", encoding="utf-8") as file:
             json.dump(dataset, file)
 
+    def test_rejects_invalid_text_fields(self):
+        for field in ("category", "collection", "date", "source_name"):
+            for value in (None, 123, []):
+                with self.subTest(field=field, value=value):
+                    self.dataset["records"] = [
+                        {"id": "1", "title": "Item", field: value}
+                    ]
+                    self.write_dataset(self.dataset)
+                    with self.assertRaises(ValueError):
+                        load_dataset(self.path)
+
+    def test_rejects_invalid_list_fields(self):
+        for field in ("materials", "places"):
+            for value in (None, "Wood", [123]):
+                with self.subTest(field=field, value=value):
+                    self.dataset["records"] = [
+                        {"id": "1", "title": "Item", field: value}
+                    ]
+                    self.write_dataset(self.dataset)
+                    with self.assertRaises(ValueError):
+                        load_dataset(self.path)
+
+    def test_rejects_invalid_year_types(self):
+        for field in ("year", "year_end"):
+            for value in ("1900", True, 1900.5):
+                with self.subTest(field=field, value=value):
+                    self.dataset["records"] = [
+                        {"id": "1", "title": "Item", "year": 1900, field: value}
+                    ]
+                    self.write_dataset(self.dataset)
+                    with self.assertRaises(ValueError):
+                        load_dataset(self.path)
+
+    def test_rejects_invalid_year_ranges(self):
+        for year in (None, 1950):
+            with self.subTest(year=year):
+                self.dataset["records"] = [
+                    {"id": "1", "title": "Item", "year": year, "year_end": 1900}
+                ]
+                self.write_dataset(self.dataset)
+                with self.assertRaises(ValueError):
+                    load_dataset(self.path)
+
+    def test_accepts_empty_optional_fields_and_unknown_years(self):
+        self.dataset["records"][0].update({
+            "category": "", "collection": "", "date": "", "source_name": "",
+            "materials": [], "places": [], "year": None, "year_end": None,
+        })
+        self.write_dataset(self.dataset)
+        _, records = load_dataset(self.path)
+        self.assertEqual(records, self.dataset["records"])
+
     def test_valid_dataset_loads(self):
         self.write_dataset(self.dataset)
 
