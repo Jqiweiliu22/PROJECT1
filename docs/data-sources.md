@@ -50,6 +50,17 @@ this audit has not independently reconstructed the original extraction.
 
 ## Next review tasks
 
+### Second item correction: slwa:b19030149 (2026-10-08)
+
+The official page https://purl.slwa.wa.gov.au/slwa_b1903014_1 identifies
+a camel transport camp panorama dated 1908. The user's catalogue screenshot
+corroborates the title, date and call number 1935B. The supplied title/date
+and description of a 1901 expedition did not match this item. Corrected
+title/date, removed the unverified incompatible description, and preserved
+the original record in image-review.json. No explicit item-level reuse
+licence was found; display URLs are cleared and permission is unverified.
+The current dataset retains 316 records and 314 nonempty image URLs.
+
 1. Locate individual SLWA catalogue records and record their source URLs.
 2. Record image rights evidence per item, including the reviewed URL and date.
 3. Verify the 11 NMA image labels against institutional records/API data.

@@ -320,3 +320,31 @@ The dataset still contains 316 records, with 315 nonempty image URLs.
 The remaining 304 SLWA image records and 11 NMA image records still
 need individual rights verification. Image URL counts do not indicate
 permission to display the images.
+
+## Entry 12: Correcting the second SLWA record
+
+### Purpose
+Resolve source discrepancies and avoid unsupported image permission labels.
+
+### AI assistance
+AI read the official image page in a browser and corrected the dataset.
+The team member supplied the catalogue screenshot and official item URL.
+
+### Review and verification
+I located and checked the official SLWA catalogue and image page:
+https://purl.slwa.wa.gov.au/slwa_b1903014_1
+
+I confirmed the official title, the year 1908 and call number 1935B.
+I supplied the catalogue screenshot and item URL for comparison.
+
+The page did not show an explicit item-level reuse licence.
+Image display permission therefore remains unverified.
+
+AI ran the core tests after the corrections; all 49 tests passed.
+
+### Changes made by the team
+I verified the source information and identified discrepancies
+in the supplied record.
+
+AI applied the corrections to the dataset and preserved the
+original record in the review file.

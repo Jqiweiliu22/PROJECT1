@@ -12,7 +12,7 @@
     "raw_count": 642,
     "record_count": 316,
     "excluded_count": 235,
-    "image_count": 315,
+    "image_count": 314,
     "notice": "Aboriginal and Torres Strait Islander people should be aware that this catalogue may contain names of deceased people. Historic catalogue terms may be outdated or offensive.",
     "scope": "A screened snapshot of public API search results for Aboriginal; not a representative survey, community-endorsed collection, or cultural safety certification.",
     "changes": "Curated records with original titles and published NMA descriptions, physical descriptions, significance statements, measurements, creators, related dates and links retained where supplied; only production dates parsed; no AI-written cultural descriptions; no images copied locally.",
@@ -685,7 +685,7 @@
     },
     {
       "id": "slwa:b19030149",
-      "title": "Start of the Transcontinental Railway Exploring Party, 1901",
+      "title": "000633D: Panoramic view of camel transport camp (90 camels), Transcontinental Railway Survey Overland Survey, 1908 / R. Scott Vere, photo.",
       "category": "Surveying",
       "all_categories": [
         "Surveying",
@@ -697,20 +697,20 @@
       "places": [],
       "collection": "1935B",
       "identifier": "b19030149",
-      "date": "1901",
+      "date": "1908",
       "date_role": "Date/s of creation",
-      "year": 1901,
+      "year": 1908,
       "year_end": null,
-      "source_url": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection",
+      "source_url": "https://purl.slwa.wa.gov.au/slwa_b1903014_1",
       "source_name": "State Library of Western Australia",
       "modified": "2022-05-25",
       "licence": "https://creativecommons.org/licenses/by/4.0/",
-      "description": "The first 'flying' survey for the Transcontinental (later Trans-Australian) Railway in 1901, Kalgoorlie to Eucla. The party consisted of John Muir, C.H. Babington, W.A. Henderson, R.J. Anketell, H. Kent, J.J. Gillio, S. Flinn and an Aboriginal man named Joe, plus 16 camels.",
-      "physical_description": "1 photographic print :",
+      "description": "",
+      "physical_description": "1 photograph : black and white ; 16 x 50 cm",
       "significance_statement": "",
       "educational_significance": "",
       "acknowledgement": "",
-      "source_copyright": "State Library of Western Australia / CC BY 4.0",
+      "source_copyright": "State Library of Western Australia; image reuse conditions unverified",
       "measurements": {},
       "creators": [
         {
@@ -721,25 +721,22 @@
       ],
       "related_dates": [
         {
-          "title": "1901",
+          "title": "1908",
           "roleName": "Date/s of creation",
-          "startDate": "1901",
-          "endDate": "1901"
+          "startDate": "1908",
+          "endDate": "1908"
         }
       ],
       "related_links": [
         {
-          "title": "Open the original SLWA image",
-          "identifier": "https://slwa.wa.gov.au/images/countryman/000633d.jpg"
-        },
-        {
-          "title": "WA open-data dataset",
-          "identifier": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection"
+          "title": "Official SLWA item and copyright information",
+          "identifier": "https://purl.slwa.wa.gov.au/slwa_b1903014_1"
         }
       ],
-      "image_url": "https://slwa.wa.gov.au/images/countryman/000633d.jpg",
-      "image_large_url": "https://slwa.wa.gov.au/images/countryman/000633d.jpg",
-      "image_licence": "CC BY 4.0"
+      "image_url": "",
+      "image_large_url": "",
+      "image_licence": "Unverified; no explicit item-level reuse licence found",
+      "image_permission_status": "unverified"
     },
     {
       "id": "slwa:b19108564",
