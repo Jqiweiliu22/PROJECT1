@@ -9,6 +9,7 @@ from collection_core import (
     filter_records,
     sort_records,
     paginate_records,
+    analyse_records,
 )
 
 
@@ -321,6 +322,58 @@ class SearchTests(unittest.TestCase):
                 with self.subTest(name=name, value=value):
                     with self.assertRaises(ValueError):
                         paginate_records([], **{name: value})
+
+
+    def test_statistics_count_categories_and_sources(self):
+        records = [
+            {"category": "Tools", "source_name": "Museum", "year": 1900},
+            {"category": "Tools", "source_name": "Library", "year": 1905},
+            {"category": "Art", "source_name": "Museum", "year": 1910},
+        ]
+        result = analyse_records(records)
+        self.assertEqual(result["total"], 3)
+        self.assertEqual(result["categories"], {"Tools": 2, "Art": 1})
+        self.assertEqual(result["sources"], {"Museum": 2, "Library": 1})
+        self.assertEqual(result["decades"], {"1900": 2, "1910": 1})
+
+    def test_statistics_separate_unknown_years_and_sort_decades(self):
+        records = [
+            {"year": 2000}, {"year": 1899}, {"year": 1900},
+            {"year": None}, {},
+        ]
+        result = analyse_records(records)
+        self.assertEqual(list(result["decades"]), ["1890", "1900", "2000"])
+        self.assertEqual(result["unknown_years"], 2)
+        self.assertEqual(sum(result["decades"].values()) + result["unknown_years"], 5)
+
+    def test_statistics_use_starting_year_once_for_date_range(self):
+        result = analyse_records([{"year": 1890, "year_end": 1910}])
+        self.assertEqual(result["decades"], {"1890": 1})
+
+    def test_statistics_handle_empty_results_and_missing_labels(self):
+        empty = analyse_records([])
+        self.assertEqual(empty, {
+            "total": 0, "categories": {}, "sources": {},
+            "decades": {}, "unknown_years": 0,
+        })
+        missing = analyse_records([{"category": "  ", "source_name": ""}])
+        self.assertEqual(missing["categories"], {"Unknown": 1})
+        self.assertEqual(missing["sources"], {"Unknown": 1})
+
+    def test_statistics_use_all_filtered_results_before_pagination(self):
+        records = [
+            {"id": "1", "category": "Tools", "year": 1900},
+            {"id": "2", "category": "Tools", "year": 1910},
+            {"id": "3", "category": "Art", "year": 1920},
+        ]
+        original = [record.copy() for record in records]
+        filtered = filter_records(records, category="Tools")
+        statistics = analyse_records(filtered)
+        page = paginate_records(filtered, page_size=1)
+        self.assertEqual(statistics["total"], 2)
+        self.assertEqual(statistics["categories"], {"Tools": 2})
+        self.assertEqual(len(page["records"]), 1)
+        self.assertEqual(records, original)
 
 
 class DatasetTests(unittest.TestCase):

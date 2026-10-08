@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 
 
 def load_dataset(path):
@@ -192,4 +193,35 @@ def paginate_records(records, page=1, page_size=12):
         "page": page,
         "page_size": page_size,
         "total_pages": total_pages,
+    }
+
+
+def analyse_records(records):
+    """Count categories, sources and starting-year decades before pagination."""
+    categories = Counter()
+    sources = Counter()
+    decades = Counter()
+    unknown_years = 0
+
+    for record in records:
+        category = record.get("category", "").strip() or "Unknown"
+        source = record.get("source_name", "").strip() or "Unknown"
+        categories[category] += 1
+        sources[source] += 1
+
+        year = record.get("year")
+        if year is None:
+            unknown_years += 1
+        else:
+            decade = (year // 10) * 10
+            decades[decade] += 1
+
+    return {
+        "total": len(records),
+        "categories": dict(categories.most_common()),
+        "sources": dict(sources.most_common()),
+        "decades": {
+            str(decade): decades[decade] for decade in sorted(decades)
+        },
+        "unknown_years": unknown_years,
     }
