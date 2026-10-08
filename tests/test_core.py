@@ -8,6 +8,7 @@ from collection_core import (
     search_records,
     filter_records,
     sort_records,
+    paginate_records,
 )
 
 
@@ -281,6 +282,45 @@ class SearchTests(unittest.TestCase):
                 self.assertEqual(sort_records([], option), [])
         with self.assertRaises(ValueError):
             sort_records([], "invalid")
+
+
+    def test_pagination_first_and_last_pages(self):
+        records = [{"id": str(number)} for number in range(5)]
+        first = paginate_records(records, page=1, page_size=2)
+        last = paginate_records(records, page=3, page_size=2)
+        self.assertEqual(first["records"], records[:2])
+        self.assertEqual(last["records"], records[4:])
+        self.assertEqual(first["total"], 5)
+        self.assertEqual(first["total_pages"], 3)
+        self.assertEqual(last["page"], 3)
+        self.assertEqual(last["page_size"], 2)
+        self.assertEqual(len(records), 5)
+
+    def test_pagination_exact_page_boundary(self):
+        records = [{"id": str(number)} for number in range(4)]
+        result = paginate_records(records, page=2, page_size=2)
+        self.assertEqual(result["total_pages"], 2)
+        self.assertEqual(result["records"], records[2:])
+
+    def test_pagination_empty_results(self):
+        result = paginate_records([], page=5)
+        self.assertEqual(result["records"], [])
+        self.assertEqual(result["total"], 0)
+        self.assertEqual(result["page"], 1)
+        self.assertEqual(result["total_pages"], 1)
+
+    def test_pagination_clamps_page_to_last_page(self):
+        records = [{"id": "1"}, {"id": "2"}, {"id": "3"}]
+        result = paginate_records(records, page=99, page_size=2)
+        self.assertEqual(result["page"], 2)
+        self.assertEqual(result["records"], [records[2]])
+
+    def test_pagination_rejects_invalid_parameters(self):
+        for name in ("page", "page_size"):
+            for value in (0, -1, "2", True, 1.5, None):
+                with self.subTest(name=name, value=value):
+                    with self.assertRaises(ValueError):
+                        paginate_records([], **{name: value})
 
 
 class DatasetTests(unittest.TestCase):

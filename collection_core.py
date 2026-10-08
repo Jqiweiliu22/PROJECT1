@@ -173,3 +173,23 @@ def sort_records(records, sort_by="relevance"):
     )
 
     return known_years + unknown_years
+
+
+def paginate_records(records, page=1, page_size=12):
+    """Return one page and navigation counts without changing the input."""
+    for value in (page, page_size):
+        if type(value) is not int or value < 1:
+            raise ValueError("Page and page size must be positive integers.")
+
+    total = len(records)
+    total_pages = max(1, (total + page_size - 1) // page_size)
+    page = min(page, total_pages)
+    start = (page - 1) * page_size
+
+    return {
+        "records": records[start:start + page_size],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+    }
