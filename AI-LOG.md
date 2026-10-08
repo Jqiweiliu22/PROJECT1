@@ -266,3 +266,31 @@ No further changes were made to the provided code.
 ### Current limitations
 Collection statistics are not yet implemented.
 Pagination still needs integration with the server and interface.
+## Entry 10: Stronger dataset validation
+
+### Purpose
+Prevent invalid field types and year ranges from causing errors
+during search, filtering, sorting and analysis.
+
+### AI assistance
+AI provided and applied additional checks in load_dataset
+and five automated tests.
+
+The checks validate text fields, lists of strings, integer or
+null years, and valid year ranges. Empty optional values remain
+allowed.
+
+### Review and verification
+I ran the following command locally:
+
+py -m unittest discover -s tests -p test_core.py -v
+
+All 49 tests passed, including the five new dataset validation tests.
+
+### Changes made by the team
+Verified the updated validation locally.
+No further changes were made to the provided code.
+
+### Current limitations
+Source details and image permissions still require verification.
+Passing these tests does not confirm permission to display images.
