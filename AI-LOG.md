@@ -408,3 +408,21 @@ Added the boundary tests to our existing core test suite.
 
 ### Current limitations
 Browser workflows, image loading and deployment still need checking.
+
+## Entry 16: Documentation and handoff
+
+### Purpose
+Document our work and prepare the core for team integration.
+
+### AI assistance
+AI helped update the README, source documents and core handoff notes.
+
+### Review and verification
+I reviewed the source documentation. The core handoff records its
+parameters, response format and current validation results.
+
+### Changes made by the team
+Organised our data and core work for the web contributor to integrate.
+
+### Current limitations
+Full interface checks, deployment and report completion remain outstanding.
