@@ -87,3 +87,17 @@ The current dataset retains 316 records and 314 nonempty image URLs.
   (315). This is availability information, not a count of cleared images.
 - The other 304 SLWA images still need individual review. NMA images
   likewise still need item-level verification.
+
+## Entry 13 source-review summary (2026-10-08)
+
+The current dataset contains 316 records: 305 SLWA and 11 NMA. Two
+SLWA items have review entries: slwa:b18396392 requires permission for
+publication/display; slwa:b19030149 has unverified image reuse conditions.
+Their display URLs remain blank. The other 314 entries are pending review.
+314 records contain image URLs, which does not establish display permission.
+
+The five planned Noongar labels and their source/use conditions are recorded
+in language-sources.md. Published-source checks have been completed for
+those labels, but no language reuse authorization has been recorded.
+Remaining item-level permissions, extraction history and public-use
+suitability are outstanding; this entry does not claim a completed audit.

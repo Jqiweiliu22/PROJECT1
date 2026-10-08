@@ -348,3 +348,24 @@ in the supplied record.
 
 AI applied the corrections to the dataset and preserved the
 original record in the review file.
+
+## Entry 13: Source and language checks
+
+### Purpose
+Check collection and language sources for our personal-use prototype.
+
+### AI assistance
+AI helped compare source information and document the five existing
+Noongar labels in docs/language-sources.md.
+
+### Review and verification
+We checked and confirmed the collection sources and the published
+sources of the five Noongar labels. We confirmed that the prototype
+is intended for personal use.
+
+### Changes made by the team
+Recorded the sources and clarified the intended personal use.
+
+### Current limitations
+Remaining item-level image conditions and image loading still need checking.
+Language material reuse permission has not been established.
