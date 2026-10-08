@@ -369,3 +369,23 @@ Recorded the sources and clarified the intended personal use.
 ### Current limitations
 Remaining item-level image conditions and image loading still need checking.
 Language material reuse permission has not been established.
+
+## Entry 14: Core architecture changes
+
+### Purpose
+Organise the core functions into a consistent query workflow.
+
+### AI assistance
+AI helped implement query_records, parameter validation, search,
+filtering, sorting, statistics and pagination, and updated the core tests.
+
+### Review and verification
+AI ran 30 core tests and the existing 38-test suite successfully.
+The latter includes the same core cases and eight API tests.
+The dataset still contains 316 records and 44 unknown starting years.
+
+### Changes made by the team
+Adopted the core architecture needed for server integration.
+
+### Current limitations
+Complete browser workflows and image loading still need checking.

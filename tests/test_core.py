@@ -1,516 +1,268 @@
+"""Automated checks with synthetic fixtures; no museum or internet requests.
+
+Run from the application folder: python3 -m unittest discover -s tests -v
+These tests cover only the algorithmic core and dataset loader.
+"""
+
+import copy
+import io
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from collection_core import (
-    load_dataset,
-    search_records,
-    filter_records,
-    sort_records,
-    paginate_records,
-    analyse_records,
-)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from collection_core import (DatasetError, QueryError, load_dataset,
+                             query_records, relevance_score, tokenize)
+
+
+def make_record(identifier="a", **changes):
+    """A complete synthetic catalogue entry, unrelated to real cultural content."""
+    record = {
+        "id": identifier, "title": "Sample object", "category": "Vessel",
+        "materials": ["wood"], "places": ["Example place"],
+        "collection": "Test collection", "identifier": "TEST-" + identifier,
+        "date": "1905", "year": 1905, "year_end": None,
+        "source_url": "https://example.org/objects/" + identifier,
+        "source_name": "Test museum",
+        "modified": "2026-01-01", "licence": "Test licence",
+        "description": "", "image_url": "", "image_licence": "",
+        "physical_description": "", "significance_statement": "",
+        "educational_significance": "", "acknowledgement": "",
+        "source_copyright": "", "all_categories": ["Vessel"],
+        "measurements": {}, "creators": [], "related_dates": [],
+        "related_links": [],
+    }
+    record.update(changes)
+    return record
 
 
 class SearchTests(unittest.TestCase):
     def setUp(self):
         self.records = [
-            {"id": "1", "title": "Aboriginal artwork"},
-            {"id": "2", "title": "Wooden basket"},
-            {"id": "3", "title": "Aboriginal tools"},
+            make_record("a", title="Wood sample", year=1905, date="1905"),
+            make_record("b", title="Metal sample", category="Tool", materials=["metal"],
+                        places=["Other place"], year=1950, year_end=1960, date="1950–1960"),
+            make_record("c", title="Uncatalogued date", year=None, date="Date unknown"),
+            make_record("d", title="Another vessel", year=1909, date="1909"),
         ]
 
-    def test_keyword_matches_titles(self):
-        results = search_records(self.records, "Aboriginal")
+    def ids(self, result):
+        return [record["id"] for record in result["items"]]
 
-        self.assertEqual(
-            [record["id"] for record in results],
-            ["1", "3"],
-        )
+    def test_weighted_ranking_prefers_title_over_category_over_material(self):
+        records = [make_record("material", materials=["needle"]),
+                   make_record("category", category="needle"),
+                   make_record("title", title="needle")]
+        result = query_records(records, {"q": "needle"})
+        self.assertEqual(self.ids(result), ["title", "category", "material"])
 
-    def test_search_ignores_case(self):
-        results = search_records(self.records, "ABORIGINAL")
+    def test_score_adds_all_six_matching_field_weights_once(self):
+        record = make_record(title="match match", category="match", materials=["match", "match"],
+                             places=["match"], collection="match", date="match")
+        self.assertEqual(relevance_score(record, ["match"]), 19)
 
-        self.assertEqual(
-            [record["id"] for record in results],
-            ["1", "3"],
-        )
+    def test_all_tokens_must_match_but_can_match_different_fields(self):
+        self.assertEqual(self.ids(query_records(self.records, {"q": "sample metal"})), ["b"])
+        self.assertEqual(query_records(self.records, {"q": "sample absent"})["total"], 0)
 
-    def test_search_removes_surrounding_spaces(self):
-        results = search_records(self.records, "  basket  ")
+    def test_unicode_casefold_punctuation_and_repeated_tokens(self):
+        record = make_record(title="Straße SAMPLE")
+        self.assertEqual(tokenize("STRASSE, sample sample!"), ["strasse", "sample"])
+        self.assertEqual(query_records([record], {"q": "STRASSE, sample!"})["total"], 1)
+        self.assertEqual(query_records([record], {"q": "sample sample"})["total"], 1)
 
-        self.assertEqual(
-            [record["id"] for record in results],
-            ["2"],
-        )
+    def test_relevance_ties_have_deterministic_id_order(self):
+        records = [make_record("z"), make_record("a"), make_record("m")]
+        self.assertEqual(self.ids(query_records(records, {"q": "sample"})), ["a", "m", "z"])
 
-    def test_empty_query_returns_all_records(self):
-        results = search_records(self.records, "")
+    def test_category_material_place_and_query_combine(self):
+        params = {"category": "Vessel", "material": "wood", "place": "Example place", "q": "wood"}
+        self.assertEqual(self.ids(query_records(self.records, params)), ["a", "c", "d"])
+        params["place"] = "Other place"
+        self.assertEqual(query_records(self.records, params)["total"], 0)
 
-        self.assertEqual(results, self.records)
-        self.assertIsNot(results, self.records)
+    def test_filter_labels_are_exact_and_not_case_insensitive_substrings(self):
+        self.assertEqual(query_records(self.records, {"category": "vessel"})["total"], 0)
+        self.assertEqual(query_records(self.records, {"material": "woo"})["total"], 0)
 
-    def test_unmatched_query_returns_empty_list(self):
-        results = search_records(self.records, "zzzz")
+    def test_inclusive_date_interval_overlap_excludes_undated(self):
+        self.assertEqual(self.ids(query_records(self.records, {"year_start": 1960, "year_end": 1960})), ["b"])
+        self.assertEqual(query_records(self.records, {"year_start": 1961})["total"], 0)
+        self.assertEqual(self.ids(query_records(self.records, {"year_end": 1905})), ["a"])
 
-        self.assertEqual(results, [])
+    def test_undated_records_stay_null_and_sort_last_in_both_directions(self):
+        oldest = query_records(self.records, {"sort": "oldest"})
+        newest = query_records(self.records, {"sort": "newest"})
+        self.assertEqual(self.ids(oldest), ["a", "d", "b", "c"])
+        self.assertEqual(self.ids(newest), ["b", "d", "a", "c"])
+        self.assertIsNone(newest["items"][-1]["year"])
 
-    def test_empty_dataset_returns_empty_list(self):
-        results = search_records([], "basket")
+    def test_title_sort_casefolds_and_breaks_ties_by_id(self):
+        records = [make_record("z", title="alpha"), make_record("b", title="Beta"),
+                   make_record("a", title="ALPHA")]
+        self.assertEqual(self.ids(query_records(records, {"sort": "title"})), ["a", "z", "b"])
 
-        self.assertEqual(results, [])
-
-    def test_search_does_not_change_original_records(self):
-        original = [record.copy() for record in self.records]
-
-        search_records(self.records, "basket")
-
-        self.assertEqual(self.records, original)
-    def test_search_matches_each_additional_field(self):
-        examples = [
-            {"category": "basket"},
-            {"materials": ["Wood", "basket"]},
-            {"places": ["basket"]},
-            {"collection": "basket"},
-            {"date": "basket"},
-            {"source_name": "basket"},
-        ]
-
-        for fields in examples:
-            with self.subTest(fields=fields):
-                record = {"id": "1", "title": "Example item"}
-                record.update(fields)
-
-                results = search_records([record], "basket")
-
-                self.assertEqual(results, [record])
-
-    def test_search_returns_record_only_once(self):
-        record = {
-            "id": "1",
-            "title": "Wooden basket",
-            "category": "Basket",
-            "materials": ["Wood", "Basket"],
-        }
-
-        results = search_records([record], "basket")
-
-        self.assertEqual(results, [record])
-    def test_all_query_words_must_match(self):
-        records = [
-            {"id": "1", "title": "Wooden basket"},
-            {"id": "2", "title": "Wooden tool"},
-            {"id": "3", "title": "Metal basket"},
-        ]
-
-        results = search_records(records, "wood basket")
-
-        self.assertEqual(
-            [record["id"] for record in results],
-            ["1"],
-        )
-
-    def test_query_words_can_match_different_fields(self):
-        record = {
-            "id": "1",
-            "title": "Basket",
-            "materials": ["Wood"],
-        }
-
-        results = search_records([record], "wood basket")
-
-        self.assertEqual(results, [record])
-
-    def test_title_match_ranks_above_material_match(self):
-        records = [
-            {
-                "id": "1",
-                "title": "Example item",
-                "materials": ["Wood"],
-            },
-            {
-                "id": "2",
-                "title": "Wooden basket",
-            },
-        ]
-
-        results = search_records(records, "wood")
-
-        self.assertEqual(
-            [record["id"] for record in results],
-            ["2", "1"],
-        )
-    def test_filter_by_category(self):
-        records = [
-            {"id": "1", "category": "Tools"},
-            {"id": "2", "category": "Advertisements"},
-            {"id": "3", "category": "Tools"},
-        ]
-
-        results = filter_records(records, category=" tools ")
-
-        self.assertEqual(
-            [record["id"] for record in results],
-            ["1", "3"],
-        )
-
-    def test_filter_by_source(self):
-        records = [
-            {"id": "1", "source_name": "Museum"},
-            {"id": "2", "source_name": "Library"},
-        ]
-
-        results = filter_records(records, source_name="library")
-
-        self.assertEqual(
-            [record["id"] for record in results],
-            ["2"],
-        )
-
-    def test_filter_requires_both_conditions(self):
-        records = [
-            {"id": "1", "category": "Tools", "source_name": "Museum"},
-            {"id": "2", "category": "Tools", "source_name": "Library"},
-            {"id": "3", "category": "Art", "source_name": "Museum"},
-        ]
-
-        results = filter_records(
-            records,
-            category="Tools",
-            source_name="Museum",
-        )
-
-        self.assertEqual(
-            [record["id"] for record in results],
-            ["1"],
-        )
-
-    def test_filter_without_conditions_preserves_order(self):
-        results = filter_records(self.records)
-
-        self.assertEqual(results, self.records)
-        self.assertIsNot(results, self.records)
-
-
-    def test_year_filter_includes_boundary_years(self):
-        records = [
-            {"id": "1", "year": 1899},
-            {"id": "2", "year": 1900},
-            {"id": "3", "year": 1950},
-            {"id": "4", "year": 1951},
-        ]
-        results = filter_records(records, start_year=1900, end_year=1950)
-        self.assertEqual([record["id"] for record in results], ["2", "3"])
-
-    def test_year_filter_matches_overlapping_ranges(self):
-        records = [
-            {"id": "1", "year": 1890, "year_end": 1910},
-            {"id": "2", "year": 1880, "year_end": 1899},
-            {"id": "3", "year": 1921, "year_end": 1930},
-        ]
-        results = filter_records(records, start_year=1900, end_year=1920)
-        self.assertEqual([record["id"] for record in results], ["1"])
-
-    def test_year_filter_excludes_unknown_years(self):
-        records = [
-            {"id": "1", "year": None},
-            {"id": "2", "year": 1900, "year_end": None},
-        ]
-        results = filter_records(records, start_year=1900)
-        self.assertEqual([record["id"] for record in results], ["2"])
-
-    def test_year_filter_supports_one_boundary(self):
-        records = [
-            {"id": "1", "year": 1899},
-            {"id": "2", "year": 1900},
-            {"id": "3", "year": 1901},
-        ]
-        lower_results = filter_records(records, start_year=1900)
-        upper_results = filter_records(records, end_year=1900)
-        self.assertEqual([record["id"] for record in lower_results], ["2", "3"])
-        self.assertEqual([record["id"] for record in upper_results], ["1", "2"])
-
-    def test_year_filter_rejects_invalid_limits(self):
-        invalid_limits = [
-            {"start_year": 1950, "end_year": 1900},
-            {"start_year": "1900"},
-            {"end_year": True},
-        ]
-        for limits in invalid_limits:
-            with self.subTest(limits=limits):
-                with self.assertRaises(ValueError):
-                    filter_records([], **limits)
-
-
-    def test_title_sort_ignores_case_and_preserves_input(self):
-        records = [
-            {"id": "1", "title": "zebra"},
-            {"id": "2", "title": "Apple"},
-            {"id": "3", "title": "basket"},
-        ]
-        original = [record.copy() for record in records]
-        results = sort_records(records, "title")
-        self.assertEqual([record["id"] for record in results], ["2", "3", "1"])
-        self.assertEqual(records, original)
-
-    def test_year_sort_keeps_unknown_years_last(self):
-        records = [
-            {"id": "1", "year": None},
-            {"id": "2", "year": 1950},
-            {"id": "3", "year": 1900},
-            {"id": "4"},
-        ]
-        oldest = sort_records(records, "oldest")
-        newest = sort_records(records, "newest")
-        self.assertEqual([record["id"] for record in oldest], ["3", "2", "1", "4"])
-        self.assertEqual([record["id"] for record in newest], ["2", "3", "1", "4"])
-        self.assertEqual([record["id"] for record in records], ["1", "2", "3", "4"])
-
-    def test_relevance_sort_preserves_search_ranking(self):
-        records = [
-            {"id": "1", "title": "Item", "materials": ["Wood"]},
-            {"id": "2", "title": "Wooden basket"},
-        ]
-        ranked = search_records(records, "wood")
-        results = sort_records(ranked, "relevance")
-        self.assertEqual([record["id"] for record in results], ["2", "1"])
-        self.assertIsNot(results, ranked)
-
-    def test_sort_empty_records_and_invalid_option(self):
-        for option in ("relevance", "title", "oldest", "newest"):
-            with self.subTest(option=option):
-                self.assertEqual(sort_records([], option), [])
-        with self.assertRaises(ValueError):
-            sort_records([], "invalid")
-
-
-    def test_pagination_first_and_last_pages(self):
-        records = [{"id": str(number)} for number in range(5)]
-        first = paginate_records(records, page=1, page_size=2)
-        last = paginate_records(records, page=3, page_size=2)
-        self.assertEqual(first["records"], records[:2])
-        self.assertEqual(last["records"], records[4:])
-        self.assertEqual(first["total"], 5)
-        self.assertEqual(first["total_pages"], 3)
-        self.assertEqual(last["page"], 3)
-        self.assertEqual(last["page_size"], 2)
-        self.assertEqual(len(records), 5)
-
-    def test_pagination_exact_page_boundary(self):
-        records = [{"id": str(number)} for number in range(4)]
-        result = paginate_records(records, page=2, page_size=2)
-        self.assertEqual(result["total_pages"], 2)
-        self.assertEqual(result["records"], records[2:])
-
-    def test_pagination_empty_results(self):
-        result = paginate_records([], page=5)
-        self.assertEqual(result["records"], [])
-        self.assertEqual(result["total"], 0)
-        self.assertEqual(result["page"], 1)
-        self.assertEqual(result["total_pages"], 1)
-
-    def test_pagination_clamps_page_to_last_page(self):
-        records = [{"id": "1"}, {"id": "2"}, {"id": "3"}]
-        result = paginate_records(records, page=99, page_size=2)
-        self.assertEqual(result["page"], 2)
-        self.assertEqual(result["records"], [records[2]])
-
-    def test_pagination_rejects_invalid_parameters(self):
-        for name in ("page", "page_size"):
-            for value in (0, -1, "2", True, 1.5, None):
-                with self.subTest(name=name, value=value):
-                    with self.assertRaises(ValueError):
-                        paginate_records([], **{name: value})
-
-
-    def test_statistics_count_categories_and_sources(self):
-        records = [
-            {"category": "Tools", "source_name": "Museum", "year": 1900},
-            {"category": "Tools", "source_name": "Library", "year": 1905},
-            {"category": "Art", "source_name": "Museum", "year": 1910},
-        ]
-        result = analyse_records(records)
-        self.assertEqual(result["total"], 3)
-        self.assertEqual(result["categories"], {"Tools": 2, "Art": 1})
-        self.assertEqual(result["sources"], {"Museum": 2, "Library": 1})
-        self.assertEqual(result["decades"], {"1900": 2, "1910": 1})
-
-    def test_statistics_separate_unknown_years_and_sort_decades(self):
-        records = [
-            {"year": 2000}, {"year": 1899}, {"year": 1900},
-            {"year": None}, {},
-        ]
-        result = analyse_records(records)
-        self.assertEqual(list(result["decades"]), ["1890", "1900", "2000"])
-        self.assertEqual(result["unknown_years"], 2)
-        self.assertEqual(sum(result["decades"].values()) + result["unknown_years"], 5)
-
-    def test_statistics_use_starting_year_once_for_date_range(self):
-        result = analyse_records([{"year": 1890, "year_end": 1910}])
-        self.assertEqual(result["decades"], {"1890": 1})
-
-    def test_statistics_handle_empty_results_and_missing_labels(self):
-        empty = analyse_records([])
-        self.assertEqual(empty, {
-            "total": 0, "categories": {}, "sources": {},
-            "decades": {}, "unknown_years": 0,
+    def test_stats_use_all_results_before_pagination(self):
+        result = query_records(self.records, {"page_size": 1})
+        self.assertEqual(len(result["items"]), 1)
+        self.assertEqual(result["stats"], {
+            "total": 4, "dated": 3, "undated": 1,
+            "categories": [{"label": "Vessel", "count": 3}, {"label": "Tool", "count": 1}],
+            "decades": [{"label": "1900s", "count": 2}, {"label": "1950s", "count": 1}],
         })
-        missing = analyse_records([{"category": "  ", "source_name": ""}])
-        self.assertEqual(missing["categories"], {"Unknown": 1})
-        self.assertEqual(missing["sources"], {"Unknown": 1})
 
-    def test_statistics_use_all_filtered_results_before_pagination(self):
-        records = [
-            {"id": "1", "category": "Tools", "year": 1900},
-            {"id": "2", "category": "Tools", "year": 1910},
-            {"id": "3", "category": "Art", "year": 1920},
-        ]
-        original = [record.copy() for record in records]
-        filtered = filter_records(records, category="Tools")
-        statistics = analyse_records(filtered)
-        page = paginate_records(filtered, page_size=1)
-        self.assertEqual(statistics["total"], 2)
-        self.assertEqual(statistics["categories"], {"Tools": 2})
-        self.assertEqual(len(page["records"]), 1)
-        self.assertEqual(records, original)
+    def test_stats_use_filtered_records_but_facets_use_full_dataset(self):
+        result = query_records(self.records, {"category": "Tool"})
+        self.assertEqual(result["stats"]["total"], 1)
+        self.assertEqual(result["stats"]["categories"], [{"label": "Tool", "count": 1}])
+        self.assertEqual(result["facets"], {"categories": ["Tool", "Vessel"],
+                                           "materials": ["metal", "wood"],
+                                           "places": ["Example place", "Other place"],
+                                           "sources": ["Test museum"]})
+
+    def test_source_filter_is_exact_and_combines_with_search(self):
+        records = [make_record("one", source_name="Museum A"),
+                   make_record("two", source_name="Library B")]
+        self.assertEqual(self.ids(query_records(records, {"source": "Library B", "q": "sample"})), ["two"])
+        self.assertEqual(query_records(records, {"source": "library b"})["total"], 0)
+
+    def test_image_filter_defaults_to_false_and_preserves_complete_catalogue(self):
+        self.records[0]["image_url"] = "https://example.org/a.jpg"
+        self.assertEqual(query_records(self.records, {})["total"], 4)
+        self.assertEqual(query_records(self.records, {"image_only": "false"})["total"], 4)
+
+    def test_image_filter_precedes_statistics_pagination_and_keeps_all_facets(self):
+        self.records[0]["image_url"] = "https://example.org/a.jpg"
+        self.records[2]["image_url"] = "https://example.org/c.jpg"
+        result = query_records(self.records, {"image_only": "true", "page_size": 1, "page": 99})
+        self.assertEqual((result["total"], result["page"], result["pages"]), (2, 2, 2))
+        self.assertEqual(self.ids(result), ["c"])
+        self.assertEqual(result["stats"], {"total": 2, "dated": 1, "undated": 1,
+                                           "categories": [{"label": "Vessel", "count": 2}],
+                                           "decades": [{"label": "1900s", "count": 1}]})
+        self.assertEqual(result["facets"], query_records(self.records, {})["facets"])
+        self.assertIn("Tool", result["facets"]["categories"])
+
+    def test_image_filter_combines_with_query_and_exact_filters(self):
+        self.records[0]["image_url"] = "https://example.org/a.jpg"
+        self.records[2]["image_url"] = "https://example.org/c.jpg"
+        params = {"image_only": "true", "q": "sample", "category": "Vessel", "material": "wood"}
+        self.assertEqual(self.ids(query_records(self.records, params)), ["a"])
+        params["category"] = "Tool"
+        self.assertEqual(query_records(self.records, params)["total"], 0)
+
+    def test_image_filter_handles_empty_and_whitespace_image_urls(self):
+        self.records[0]["image_url"] = "   "
+        result = query_records(self.records, {"image_only": "true"})
+        self.assertEqual((result["items"], result["total"], result["page"], result["pages"]), ([], 0, 1, 1))
+        self.assertEqual(result["stats"]["total"], 0)
+
+    def test_image_filter_rejects_invalid_and_repeated_flags(self):
+        for value in ("", "True", "yes", "1", "0", True, ["true", "false"]):
+            with self.subTest(value=value), self.assertRaises(QueryError):
+                query_records(self.records, {"image_only": value})
+        self.assertEqual(query_records(self.records, {"image_only": ["false"]})["total"], 4)
+
+    def test_page_beyond_end_clamps_to_last_page(self):
+        result = query_records(self.records, {"page_size": 3, "page": 999})
+        self.assertEqual((result["page"], result["pages"], result["total"]), (2, 2, 4))
+        self.assertEqual(self.ids(result), ["d"])
+
+    def test_empty_dataset_and_empty_match_are_valid_single_empty_pages(self):
+        for records, params in (([], {}), (self.records, {"q": "impossible", "page": 2})):
+            with self.subTest(params=params):
+                result = query_records(records, params)
+                self.assertEqual((result["items"], result["total"], result["page"], result["pages"]), ([], 0, 1, 1))
+                self.assertEqual(result["stats"], {"total": 0, "dated": 0, "undated": 0,
+                                                   "categories": [], "decades": []})
+
+    def test_invalid_year_ranges_and_boundaries(self):
+        for params in ({"year_start": 2000, "year_end": 1900}, {"year_start": 0},
+                       {"year_end": 2101}, {"year_start": "1900.5"}, {"year_end": "unknown"}):
+            with self.subTest(params=params), self.assertRaises(QueryError):
+                query_records(self.records, params)
+        self.assertEqual(query_records(self.records, {"year_start": 1, "year_end": 2100})["total"], 3)
+
+    def test_invalid_sort_page_and_page_size(self):
+        for params in ({"sort": "random"}, {"page": 0}, {"page": -1}, {"page": "1.2"},
+                       {"page_size": 0}, {"page_size": 51}, {"page": "9" * 100}, {"page": True}):
+            with self.subTest(params=params), self.assertRaises(QueryError):
+                query_records(self.records, params)
+        self.assertEqual(query_records(self.records, {"page_size": 50})["page_size"], 50)
+
+    def test_query_length_boundary_and_duplicate_parameters(self):
+        self.assertEqual(query_records(self.records, {"q": " " * 160})["total"], 4)
+        for params in ({"q": " " * 161}, {"q": ["one", "two"]}, {"page": ["1", "2"]}):
+            with self.subTest(params=params), self.assertRaises(QueryError):
+                query_records(self.records, params)
+        self.assertEqual(query_records(self.records, {"q": ["metal"], "page": ["1"]})["total"], 1)
+
+    def test_search_and_returned_items_do_not_mutate_input(self):
+        original = copy.deepcopy(self.records)
+        result = query_records(self.records, {"q": "wood"})
+        result["items"][0]["title"] = "Changed in caller"
+        result["items"][0]["materials"].append("changed in caller")
+        self.assertEqual(self.records, original)
 
 
 class DatasetTests(unittest.TestCase):
-    def setUp(self):
-        self.temp_directory = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temp_directory.cleanup)
+    def load(self, payload):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "dataset.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            return load_dataset(path)
 
-        self.path = Path(self.temp_directory.name) / "test_data.json"
+    def test_valid_dataset_preserves_exact_source_description_and_nulls(self):
+        record = make_record(description="  Source text.\nSecond line.",
+                             physical_description="Original physical text.",
+                             significance_statement="Original significance text.",
+                             measurements={"height": 10, "unitText": "mm"},
+                             related_dates=[{"title": "About 1900", "roleName": "Associated date"}],
+                             year=None, date="")
+        metadata, records = self.load({"metadata": {"source": "test"}, "records": [record]})
+        self.assertEqual(metadata, {"source": "test"})
+        self.assertEqual(records, [record])
 
-        self.dataset = {
-            "metadata": {"title": "Test dataset"},
-            "records": [
-                {"id": "1", "title": "Test item"}
-            ],
-        }
+    def test_invalid_enriched_field_types_are_rejected(self):
+        bad_records = [make_record(physical_description=[]), make_record(all_categories="Vessel"),
+                       make_record(measurements=[]), make_record(creators=["unknown"]),
+                       make_record(related_dates={}), make_record(related_links=["https://example.org"])]
+        for record in bad_records:
+            with self.subTest(record=record), self.assertRaises(DatasetError):
+                self.load({"metadata": {}, "records": [record]})
 
-    def write_dataset(self, dataset):
-        with open(self.path, "w", encoding="utf-8") as file:
-            json.dump(dataset, file)
+    def test_duplicate_ids_are_rejected_not_silently_deduplicated(self):
+        with self.assertRaisesRegex(DatasetError, "Duplicate record ID"):
+            self.load({"metadata": {}, "records": [make_record("a"), make_record("a")]})
 
-    def test_rejects_invalid_text_fields(self):
-        for field in ("category", "collection", "date", "source_name"):
-            for value in (None, 123, []):
-                with self.subTest(field=field, value=value):
-                    self.dataset["records"] = [
-                        {"id": "1", "title": "Item", field: value}
-                    ]
-                    self.write_dataset(self.dataset)
-                    with self.assertRaises(ValueError):
-                        load_dataset(self.path)
+    def test_invalid_schema_types_and_date_intervals_are_rejected(self):
+        bad_records = [make_record(title=3), make_record(materials="wood"), make_record(year=True),
+                       make_record(year_end=1800), make_record(year=None, year_end=1900), make_record(id="")]
+        missing = make_record()
+        del missing["year_end"]
+        bad_records.append(missing)
+        for record in bad_records:
+            with self.subTest(record=record), self.assertRaises(DatasetError):
+                self.load({"metadata": {}, "records": [record]})
 
-    def test_rejects_invalid_list_fields(self):
-        for field in ("materials", "places"):
-            for value in (None, "Wood", [123]):
-                with self.subTest(field=field, value=value):
-                    self.dataset["records"] = [
-                        {"id": "1", "title": "Item", field: value}
-                    ]
-                    self.write_dataset(self.dataset)
-                    with self.assertRaises(ValueError):
-                        load_dataset(self.path)
+    def test_empty_dataset_is_valid_but_malformed_envelope_is_rejected(self):
+        self.assertEqual(self.load({"metadata": {}, "records": []}), ({}, []))
+        for payload in ([], {}, {"metadata": [], "records": []}):
+            with self.subTest(payload=payload), self.assertRaises(DatasetError):
+                self.load(payload)
 
-    def test_rejects_invalid_year_types(self):
-        for field in ("year", "year_end"):
-            for value in ("1900", True, 1900.5):
-                with self.subTest(field=field, value=value):
-                    self.dataset["records"] = [
-                        {"id": "1", "title": "Item", "year": 1900, field: value}
-                    ]
-                    self.write_dataset(self.dataset)
-                    with self.assertRaises(ValueError):
-                        load_dataset(self.path)
+    def test_missing_or_non_json_files_report_dataset_errors(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "missing.json"
+            with self.assertRaises(DatasetError):
+                load_dataset(path)
+            path.write_text("this is not JSON", encoding="utf-8")
+            with self.assertRaises(DatasetError):
+                load_dataset(path)
 
-    def test_rejects_invalid_year_ranges(self):
-        for year in (None, 1950):
-            with self.subTest(year=year):
-                self.dataset["records"] = [
-                    {"id": "1", "title": "Item", "year": year, "year_end": 1900}
-                ]
-                self.write_dataset(self.dataset)
-                with self.assertRaises(ValueError):
-                    load_dataset(self.path)
-
-    def test_accepts_empty_optional_fields_and_unknown_years(self):
-        self.dataset["records"][0].update({
-            "category": "", "collection": "", "date": "", "source_name": "",
-            "materials": [], "places": [], "year": None, "year_end": None,
-        })
-        self.write_dataset(self.dataset)
-        _, records = load_dataset(self.path)
-        self.assertEqual(records, self.dataset["records"])
-
-    def test_valid_dataset_loads(self):
-        self.write_dataset(self.dataset)
-
-        metadata, records = load_dataset(self.path)
-
-        self.assertEqual(metadata, self.dataset["metadata"])
-        self.assertEqual(records, self.dataset["records"])
-
-    def test_empty_records_are_allowed(self):
-        self.dataset["records"] = []
-        self.write_dataset(self.dataset)
-
-        metadata, records = load_dataset(self.path)
-
-        self.assertEqual(records, [])
-
-    def test_rejects_invalid_outer_structure(self):
-        self.write_dataset([])
-
-        with self.assertRaises(ValueError):
-            load_dataset(self.path)
-
-    def test_rejects_missing_metadata(self):
-        del self.dataset["metadata"]
-        self.write_dataset(self.dataset)
-
-        with self.assertRaises(ValueError):
-            load_dataset(self.path)
-
-    def test_rejects_invalid_records_type(self):
-        self.dataset["records"] = {}
-        self.write_dataset(self.dataset)
-
-        with self.assertRaises(ValueError):
-            load_dataset(self.path)
-
-    def test_rejects_non_object_record(self):
-        self.dataset["records"] = ["invalid record"]
-        self.write_dataset(self.dataset)
-
-        with self.assertRaises(ValueError):
-            load_dataset(self.path)
-
-    def test_rejects_missing_id(self):
-        del self.dataset["records"][0]["id"]
-        self.write_dataset(self.dataset)
-
-        with self.assertRaises(ValueError):
-            load_dataset(self.path)
-
-    def test_rejects_blank_title(self):
-        self.dataset["records"][0]["title"] = "   "
-        self.write_dataset(self.dataset)
-
-        with self.assertRaises(ValueError):
-            load_dataset(self.path)
-
-    def test_rejects_duplicate_ids(self):
-        self.dataset["records"].append(
-            {"id": "1", "title": "Another item"}
-        )
-        self.write_dataset(self.dataset)
-
-        with self.assertRaises(ValueError):
-            load_dataset(self.path)
 
 
 if __name__ == "__main__":
