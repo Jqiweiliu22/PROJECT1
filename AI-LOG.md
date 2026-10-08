@@ -294,3 +294,29 @@ No further changes were made to the provided code.
 ### Current limitations
 Source details and image permissions still require verification.
 Passing these tests does not confirm permission to display images.
+
+## Entry 11: First item-level image permission review
+
+### Purpose
+Verify the source and image usage conditions of SLWA record slwa:b18396392.
+
+### AI assistance
+AI located the official item page, identified a conflict with the supplied
+CC BY 4.0 image label, and applied corrections to the record and source audit.
+
+### Review and verification
+I opened https://purl.slwa.wa.gov.au/slwa_b1839639_1 and confirmed
+the Terms of use: publication or display requires contacting SLWA.
+No display permission has been obtained.
+AI reran the 49 core tests after the data correction; all passed.
+
+### Changes made by the team
+Confirmed the official usage conditions and retained the corrected record.
+The correction replaces the generic source link with the specific item
+page, clears the display image URLs, and records permission_required.
+The dataset still contains 316 records, with 315 nonempty image URLs.
+
+### Current limitations
+The remaining 304 SLWA image records and 11 NMA image records still
+need individual rights verification. Image URL counts do not indicate
+permission to display the images.

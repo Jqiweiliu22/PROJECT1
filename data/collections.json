@@ -12,7 +12,7 @@
     "raw_count": 642,
     "record_count": 316,
     "excluded_count": 235,
-    "image_count": 316,
+    "image_count": 315,
     "notice": "Aboriginal and Torres Strait Islander people should be aware that this catalogue may contain names of deceased people. Historic catalogue terms may be outdated or offensive.",
     "scope": "A screened snapshot of public API search results for Aboriginal; not a representative survey, community-endorsed collection, or cultural safety certification.",
     "changes": "Curated records with original titles and published NMA descriptions, physical descriptions, significance statements, measurements, creators, related dates and links retained where supplied; only production dates parsed; no AI-written cultural descriptions; no images copied locally.",
@@ -648,7 +648,7 @@
       "date_role": "Date/s of creation",
       "year": 1929,
       "year_end": null,
-      "source_url": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection",
+      "source_url": "https://purl.slwa.wa.gov.au/slwa_b1839639_1",
       "source_name": "State Library of Western Australia",
       "modified": "2022-05-25",
       "licence": "https://creativecommons.org/licenses/by/4.0/",
@@ -657,7 +657,7 @@
       "significance_statement": "",
       "educational_significance": "",
       "acknowledgement": "",
-      "source_copyright": "State Library of Western Australia / CC BY 4.0",
+      "source_copyright": "State Library of Western Australia; item-specific display permission required",
       "measurements": {},
       "creators": [],
       "related_dates": [
@@ -670,17 +670,18 @@
       ],
       "related_links": [
         {
-          "title": "Open the original SLWA image",
-          "identifier": "https://slwa.wa.gov.au/images/pd219/219,000PD.jpg"
-        },
-        {
           "title": "WA open-data dataset",
           "identifier": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection"
+        },
+        {
+          "title": "Official SLWA item and usage conditions",
+          "identifier": "https://purl.slwa.wa.gov.au/slwa_b1839639_1"
         }
       ],
-      "image_url": "https://slwa.wa.gov.au/images/pd219/219,000PD.jpg",
-      "image_large_url": "https://slwa.wa.gov.au/images/pd219/219,000PD.jpg",
-      "image_licence": "CC BY 4.0"
+      "image_url": "",
+      "image_large_url": "",
+      "image_licence": "Permission required for publication or display; not obtained",
+      "image_permission_status": "permission_required"
     },
     {
       "id": "slwa:b19030149",
