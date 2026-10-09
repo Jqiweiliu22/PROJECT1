@@ -28,7 +28,7 @@ Images load from external institutional URLs and require a network connection.
 - `data/collections.json`: local collection snapshot.
 - `tests/test_core.py`: data contributor's core tests.
 - `check_data.py` and `check_search.py`: command-line checks.
-- `app.py`, `index.html`, `styles.css`, `script.js` and root `test_core.py`: web contributor's server, interface and integration tests.
+- `app.py`, `index.html`, `styles.css` and `script.js`: web contributor's server and interface.
 - `docs/architecture.md`: architecture and data flow.
 - `docs/integration-review.md`: core interface and handoff notes.
 - `docs/data-sources.md` and `docs/language-sources.md`: source checks and outstanding use conditions.
@@ -38,15 +38,14 @@ Images load from external institutional URLs and require a network connection.
 
 ```sh
 python3 -m unittest discover -s tests -v
-python3 -m unittest test_core -v
 python3 check_data.py
 python3 check_search.py
 ```
 
-The core suite has 34 passing tests. The existing root suite has 38 passing
-tests: 30 overlapping core tests and eight API tests. These are 42 distinct
-test cases across the two suites, not 72 independent checks.
-The tests use synthetic fixtures and do not check live image loading.
+The current core suite has 34 passing tests. The root `test_core.py` file
+has been removed, so its eight API tests are not currently retained in the
+repository. The core tests use synthetic fixtures and do not check browser
+workflows or live image loading.
 
 ## Data and sources
 

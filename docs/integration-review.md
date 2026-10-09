@@ -32,8 +32,10 @@ sources from the full dataset.
 
 ## Validation and next work
 
-34 core tests pass. The web contributor's existing root suite also passes
-38 tests, including 30 overlapping core cases and eight API cases.
+34 core tests pass. The root `test_core.py` file has been removed,
+so its eight API tests are not currently retained in the repository.
+Current automated validation covers the core; API test coverage needs
+restoring separately.
 The real dataset loads with 316 records, 314 nonempty image URLs, 44 unknown
 starting years and no missing IDs, missing titles or duplicate IDs.
 
