@@ -754,7 +754,7 @@
       "date_role": "Date/s of creation",
       "year": 1901,
       "year_end": null,
-      "source_url": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection",
+      "source_url": "https://purl.slwa.wa.gov.au/slwa_b1910856_1",
       "source_name": "State Library of Western Australia",
       "modified": "2022-05-25",
       "licence": "https://creativecommons.org/licenses/by/4.0/",
@@ -788,6 +788,10 @@
         {
           "title": "WA open-data dataset",
           "identifier": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection"
+        },
+        {
+          "title": "Official SLWA item page",
+          "identifier": "https://purl.slwa.wa.gov.au/slwa_b1910856_1"
         }
       ],
       "image_url": "https://slwa.wa.gov.au/images/cof/000901d.jpg",
@@ -811,7 +815,7 @@
       "date_role": "Date/s of creation",
       "year": 1890,
       "year_end": 1899,
-      "source_url": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection",
+      "source_url": "https://purl.slwa.wa.gov.au/slwa_b1921637_1",
       "source_name": "State Library of Western Australia",
       "modified": "2022-05-25",
       "licence": "https://creativecommons.org/licenses/by/4.0/",
@@ -845,6 +849,10 @@
         {
           "title": "WA open-data dataset",
           "identifier": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection"
+        },
+        {
+          "title": "Official SLWA item page",
+          "identifier": "https://purl.slwa.wa.gov.au/slwa_b1921637_1"
         }
       ],
       "image_url": "https://slwa.wa.gov.au/images/pd019/019057PD.jpg",

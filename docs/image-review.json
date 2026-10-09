@@ -222,10 +222,12 @@
       "provided_source_url": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection",
       "provided_image_label": "CC BY 4.0",
       "status": "pending",
-      "verified_item_url": "",
+      "verified_item_url": "https://purl.slwa.wa.gov.au/slwa_b1910856_1",
       "checked_at": "",
       "checked_by": "",
-      "notes": ""
+      "notes": " Official item page title matched the record and official CSV caption on 2026-10-09. Source identity checked only; image-use review is not completed.",
+      "source_checked_at": "2026-10-09",
+      "source_checked_by": "AI"
     },
     {
       "id": "slwa:b19216373",
@@ -234,10 +236,12 @@
       "provided_source_url": "https://catalogue.data.wa.gov.au/en/dataset/digital-photographic-collection",
       "provided_image_label": "CC BY 4.0",
       "status": "pending",
-      "verified_item_url": "",
+      "verified_item_url": "https://purl.slwa.wa.gov.au/slwa_b1921637_1",
       "checked_at": "",
       "checked_by": "",
-      "notes": ""
+      "notes": " Official item page title matched the record and official CSV caption on 2026-10-09. Source identity checked only; image-use review is not completed.",
+      "source_checked_at": "2026-10-09",
+      "source_checked_by": "AI"
     },
     {
       "id": "slwa:b1921652x",

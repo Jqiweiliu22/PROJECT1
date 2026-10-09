@@ -30,8 +30,8 @@ this audit has not independently reconstructed the original extraction.
 - Collection copyright guidance: https://slwa.wa.gov.au/about/corporate-information/copyright-library-collections
 - The JSON labels all 305 images CC BY 4.0. That uniform label is not
   evidence that each photograph has been licensed for reuse.
-- All 305 source_url fields currently point to the dataset landing page,
-  rather than providing individual catalogue sources.
+- 301 SLWA source_url fields still point to the dataset landing page.
+  Four now point to individually checked official item pages.
 - Review each item's catalogue rights and access conditions. Do not mark
   the SLWA images as cleared merely because the metadata is downloadable.
 - Until reviewed, the image permission status is unverified. Page owners
@@ -107,3 +107,18 @@ in language-sources.md. Published-source checks have been completed for
 those labels, but no language reuse authorization has been recorded.
 Remaining item-level permissions, extraction history and public-use
 suitability are outstanding; this entry does not claim a completed audit.
+
+## SLWA source matching (2026-10-09)
+
+AI downloaded the official Pictorial collection CSV and matched all 305
+SLWA bibliographic record numbers. The 303 records that previously retained
+generic source links also matched the snapshot image captions and image URLs
+(after normalising HTTP/HTTPS, www and path case). This is snapshot provenance
+evidence, not a completed live catalogue or rights review.
+
+Two further item pages were checked in the browser: slwa:b19108564 and
+slwa:b19216373. Their displayed headings matched the records and official
+snapshot captions; their source_url fields now use those verified pages.
+301 generic source links remain. Evidence is in slwa-source-matches.json.
+Image URLs and permission statuses have not been changed by this source-link
+update; pending image-use reviews remain outstanding.
