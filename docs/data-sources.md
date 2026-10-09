@@ -39,9 +39,15 @@ this audit has not independently reconstructed the original extraction.
 
 ## Other issues to resolve
 
-- raw_count (642), excluded_count (235) and record_count (316) do not
-  reconcile as a simple subtraction. Explain extraction/merging stages
-  from actual evidence instead of inventing a cleaning history.
+- The supplied metadata originally listed raw_count as 642 and
+  excluded_count as 235. The original extraction files and filtering
+  scripts are not available in this repository, so these figures could
+  not be verified and have been removed from the active metadata.
+  The current dataset has been counted directly and contains 316 records:
+  305 from SLWA and 11 from NMA. No complete extraction or filtering
+  history is claimed.
+- The description field coverage has been corrected from 153 to 152,
+  matching the current records after the second SLWA item correction.
 - The dataset-wide licence describes NMA text and cannot represent every
   image and both institutions' material.
 - Keyword screening does not establish cultural suitability. Check item

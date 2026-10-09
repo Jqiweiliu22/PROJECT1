@@ -9,9 +9,7 @@
     "licence": "CC BY-NC 4.0",
     "licence_url": "https://creativecommons.org/licenses/by-nc/4.0/",
     "retrieved_at": "2026-09-30",
-    "raw_count": 642,
     "record_count": 316,
-    "excluded_count": 235,
     "image_count": 314,
     "notice": "Aboriginal and Torres Strait Islander people should be aware that this catalogue may contain names of deceased people. Historic catalogue terms may be outdated or offensive.",
     "scope": "A screened snapshot of public API search results for Aboriginal; not a representative survey, community-endorsed collection, or cultural safety certification.",
@@ -21,7 +19,7 @@
     "field_coverage": {
       "physical_description": 316,
       "significance_statement": 5,
-      "description": 153,
+      "description": 152,
       "measurements": 11,
       "creators": 131,
       "related_dates": 313,
