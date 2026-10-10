@@ -49,8 +49,10 @@ starting years and no missing IDs, missing titles or duplicate IDs.
 The existing server already imports the required functions and error classes.
 The application is publicly deployed at
 https://collection-explorer-93n8.onrender.com. AI checked basic public static-file
-and API availability on 2026-10-10. A report draft has been prepared separately;
-final team review, browser workflows, mobile checks and external image loading
-remain outstanding.
+and API availability on 2026-10-10. Both students retained dated evidence of
+personally running the 41-test suite at commit `d1073c4`, and the team checked
+the main browser workflow. A technical report has been prepared separately.
+Formal mobile-layout testing and exhaustive external-image availability checks
+have not been retained.
 Image and language use conditions are documented separately in the source files;
 passing code tests does not resolve those conditions.

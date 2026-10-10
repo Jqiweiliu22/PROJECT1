@@ -33,5 +33,6 @@ The server supplies `/api/meta`, `/api/collections` and `/api/objects/{id}`.
 It limits static files through an allowlist and rejects traversal and symlinks.
 The interface and server belong to the web contributor; this document describes
 those existing components without changing them. AI verified basic public
-static-file and API availability on 2026-10-10. Complete browser workflows,
-mobile layout and external image loading remain to be checked.
+static-file and API availability on 2026-10-10, and the team checked the main
+browser workflow. Formal mobile-layout testing and exhaustive external-image
+availability checks have not been retained.

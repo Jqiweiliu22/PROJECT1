@@ -451,7 +451,7 @@ Student review, formal identities, deployment evidence and final browser checks 
 Align the public-facing wording with the current dataset, source documentation and student-project scope.
 
 ### AI assistance
-At Leyi Jiang's direction, AI helped refine the About-page source and permission wording, the footer, the collection count sentence and the image-rights labels. AI also helped correct a spelling error and align the stated visual reference with the National Library of China.
+At Leyi Jiang's direction, AI helped refine the About-page source and permission wording, the footer, the collection count sentence and the image-rights labels. AI also helped correct a spelling error and remove an unsupported statement about the website's visual reference.
 
 ### Review and verification
 On 10 October 2026, AI-assisted checks ran all 41 automated tests successfully. The data checker confirmed 316 records, 314 non-empty image URLs and 44 records with unknown years. Local browser checks covered search, combined filters, a record detail page, Insights, a no-results state, invalid year input and the About page. The deployed site also loaded successfully and returned the expected result for a sample search. These AI-assisted checks do not replace the two students' own dated verification evidence.
@@ -460,7 +460,7 @@ On 10 October 2026, AI-assisted checks ran all 41 automated tests successfully. 
 Leyi Jiang reviewed the website wording and requested precise replacements so that the interface describes the available content accurately and does not imply that every image has the same reuse licence. The project continues to distinguish dataset or catalogue-text licences from item-level image conditions.
 
 ### Current limitations
-Both students still need to run the 41-test command personally and record the date, command and result. They should also complete and record one final public-site workflow before submission. Most SLWA records still use a dataset-level source link rather than a verified item page, so users must check source information and image conditions before reuse.
+Both students personally ran the 41-test command at commit `d1073c4` and retained dated screenshots. Qiwei Liu recorded 41 passing tests at 22:03 AWST, and Leyi Jiang recorded 41 passing tests at 23:06 AWST, on 10 October 2026. Team browser checks covered the main public-site workflow. Most SLWA records still use a dataset-level source link rather than a verified item page, so users must check source information and image conditions before reuse.
 
 ## Entry 19: Scope and local-language wording review
 
@@ -478,3 +478,20 @@ Leyi Jiang chose to retain the limited Noongar labels as an acknowledgement of t
 
 ### Current limitations
 This wording change does not establish permission to reuse the Noongar labels or every image. The team must retain source evidence, seek facilitator guidance where permission remains unclear, and remove uncertain material if it cannot be cleared for the final public submission.
+
+## Entry 20: Final content and verification check
+
+### Purpose
+Record the final team checks and remove statements that were no longer accurate.
+
+### AI assistance
+At Leyi Jiang's direction, AI compared the public wording, current data counts, verification notes and Git status. AI helped replace ambiguous licence wording, remove an unsupported design-reference statement and update outdated testing notes.
+
+### Review and verification
+The repository was clean and matched `origin/main` at commit `d1073c4` before these local wording changes. All 41 core tests passed again on 10 October 2026. The deployed application loaded 316 records, displayed 314 records with non-empty image URLs and provided 27 result pages in its default illustrated view.
+
+### Changes made by the team
+Both students retained dated evidence of personally running the 41-test suite. Leyi Jiang reviewed the final public wording and requested that only statements supported by the current project evidence be kept.
+
+### Current limitations
+The automated suite covers the Python core rather than complete browser or API workflows. Mobile layout, long-term external image availability and unresolved item-level image and language reuse conditions remain limitations and are not presented as completed checks.

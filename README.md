@@ -79,9 +79,10 @@ The five existing Noongar interface labels are documented in
 ## Current status
 
 The core, server and interface are present, the core tests pass, and the
-application is publicly deployed on Render. A technical report draft has been
-prepared separately and still needs final team review against the submitted
-project. Full browser workflows, mobile checks, external image loading and
-remaining source-use conditions still need verification. Public availability
-does not establish image or language reuse permission; outstanding conditions
-are recorded in the source documents.
+application is publicly deployed on Render. Both students retained dated
+evidence of personally running all 41 core tests at commit `d1073c4`, and the
+team checked the main browser workflow. A technical report has been prepared
+separately for final submission. Formal mobile-layout testing, long-term
+external image availability and remaining source-use conditions are documented
+limitations. Public availability does not establish image or language reuse
+permission; outstanding conditions are recorded in the source documents.
