@@ -426,3 +426,21 @@ Organised our data and core work for the web contributor to integrate.
 
 ### Current limitations
 Full interface checks, deployment and report completion remain outstanding.
+
+## Entry 17: Technical report draft
+
+### Purpose
+Prepare a report based on the current project and our question workbook.
+
+### AI assistance
+AI helped draft the eleven report sections and produce a PDF with an architecture diagram.
+
+### Review and verification
+AI checked the current code, data and Git history and ran all 34 core tests successfully.
+The draft records missing student details and outstanding verification and deployment work.
+
+### Changes made by the team
+Prepared the report draft for student review and completion.
+
+### Current limitations
+Student review, formal identities, deployment evidence and final browser checks remain outstanding.

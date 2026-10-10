@@ -15,6 +15,12 @@ once at startup. Records remain in memory; data changes require a restart.
 Search and statistics use the local snapshot and do not call external APIs.
 The browser fetches institutional images directly.
 
+The public deployment is hosted on Render at
+https://collection-explorer-93n8.onrender.com. Render provides the public HTTPS
+endpoint for this same Python application and its static files. The server
+supports binding to `0.0.0.0` and using Render's `PORT` environment variable;
+no additional application framework or database is required.
+
 The core validates parameters, filters records, scores keyword matches,
 sorts, calculates statistics and then paginates. Statistics cover every
 matched record; filter choices describe the full dataset.
@@ -26,5 +32,6 @@ Date filters include overlapping intervals; unknown years sort last in both date
 The server supplies `/api/meta`, `/api/collections` and `/api/objects/{id}`.
 It limits static files through an allowlist and rejects traversal and symlinks.
 The interface and server belong to the web contributor; this document describes
-those existing components without changing them. Browser checks and deployment
-remain outstanding.
+those existing components without changing them. AI verified basic public
+static-file and API availability on 2026-10-10. Complete browser workflows,
+mobile layout and external image loading remain to be checked.

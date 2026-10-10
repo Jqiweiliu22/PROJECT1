@@ -15,6 +15,22 @@ Open http://127.0.0.1:8000/ in a browser. Stop the server with Ctrl+C.
 If port 8000 is occupied, use `--port 8001` and open the corresponding URL.
 Restart the server after changing the dataset.
 
+## Public deployment
+
+The application is publicly accessible at
+[Collection Explorer on Render](https://collection-explorer-93n8.onrender.com).
+Render serves the Python application and its HTML, CSS and JavaScript;
+the browser still requests collection images from the source institutions.
+For Render, the server can be started with:
+
+```sh
+python app.py --host 0.0.0.0 --port "$PORT" --no-browser
+```
+
+AI checked the public HTML, CSS, JavaScript, metadata and collection-query
+endpoints on 2026-10-10. These checks confirm basic availability, not complete
+browser workflows, mobile layout, image loading or item-level reuse permission.
+
 ## Using the application
 
 Search by keyword, combine filters, choose a sort order and move between
@@ -42,7 +58,9 @@ python3 check_data.py
 python3 check_search.py
 ```
 
-The current core suite has 34 passing tests. The root `test_core.py` file
+The current core suite has 41 passing tests, including all seven search fields,
+era boundaries, collection-type filters, combined filters and invalid parameters.
+The root `test_core.py` file
 has been removed, so its eight API tests are not currently retained in the
 repository. The core tests use synthetic fixtures and do not check browser
 workflows or live image loading.
@@ -60,7 +78,10 @@ The five existing Noongar interface labels are documented in
 
 ## Current status
 
-The core, local server and interface are present, and the automated suites pass.
-The prototype is currently intended for personal use. Full browser workflows,
-external image loading, remaining source conditions, deployment and the final
-report still need checking or completion. No public deployment is documented.
+The core, server and interface are present, the core tests pass, and the
+application is publicly deployed on Render. A technical report draft has been
+prepared separately and still needs final team review against the submitted
+project. Full browser workflows, mobile checks, external image loading and
+remaining source-use conditions still need verification. Public availability
+does not establish image or language reuse permission; outstanding conditions
+are recorded in the source documents.

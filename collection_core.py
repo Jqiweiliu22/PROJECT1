@@ -1,7 +1,7 @@
 """Search and analysis for Collection Explorer, using only the Python standard library.
 
 The algorithm is deliberately explicit: tokenize a query, visit each record, test
-every token against six fields, accumulate weighted scores, then filter, sort,
+every token against seven fields, accumulate weighted scores, then filter, sort,
 count and paginate. No search library performs the main task for us.
 """
 
@@ -147,7 +147,8 @@ def relevance_score(record: Mapping[str, Any], tokens: Sequence[str]) -> Optiona
     """Return the AND-match score, or None if any token is absent.
 
     For each token, a substring match earns each field's weight at most once:
-    title 8, category 4, materials 3, places 2, collection 1, date 1. A token
+    title 8, category 4, materials 3, places 2, collection 1, date 1 and
+    source_name 1. A token
     found in several fields earns their sum. All tokens must match somewhere;
     they may occur in different fields. Empty token lists match with score 0.
     """
@@ -221,7 +222,7 @@ def query_records(records: Sequence[Mapping[str, Any]], params: Mapping[str, Any
     the results clamp to the final page, with empty results represented by page
     1 of 1. All analysis precedes pagination, and input records are not modified.
 
-    For N records, T tokens and six fields, matching takes O(N*T*L), where L is
+    For N records, T tokens and seven fields, matching takes O(N*T*L), where L is
     the text scanned per record. Sorting at most N matches takes O(N log N).
     """
     query = _parameter(params, "q", strip=False)

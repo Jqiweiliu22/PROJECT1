@@ -59,10 +59,11 @@ class SearchTests(unittest.TestCase):
         result = query_records(records, {"q": "needle"})
         self.assertEqual(self.ids(result), ["title", "category", "material"])
 
-    def test_score_adds_all_six_matching_field_weights_once(self):
+    def test_score_adds_all_seven_matching_field_weights_once(self):
         record = make_record(title="match match", category="match", materials=["match", "match"],
-                             places=["match"], collection="match", date="match")
-        self.assertEqual(relevance_score(record, ["match"]), 19)
+                             places=["match"], collection="match", date="match",
+                             source_name="match match")
+        self.assertEqual(relevance_score(record, ["match"]), 20)
 
     def test_all_tokens_must_match_but_can_match_different_fields(self):
         self.assertEqual(self.ids(query_records(self.records, {"q": "sample metal"})), ["b"])
@@ -213,11 +214,94 @@ class SearchBoundaryTests(unittest.TestCase):
         for field, value, expected in (
                 ("title", "needle", 8), ("category", "needle", 4),
                 ("materials", ["needle"], 3), ("places", ["needle"], 2),
-                ("collection", "needle", 1), ("date", "needle", 1)):
+                ("collection", "needle", 1), ("date", "needle", 1),
+                ("source_name", "needle", 1)):
             with self.subTest(field=field):
                 record = make_record(**{field: value})
                 self.assertEqual(relevance_score(record, ["needle"]), expected)
                 self.assertEqual(query_records([record], {"q": "needle"})["total"], 1)
+
+    def test_source_name_matches_casefolded_tokens_and_combines_with_title(self):
+        records = [make_record("a", title="Blue sample", source_name="Example Archive"),
+                   make_record("b", title="Blue sample", source_name="Other institution")]
+        result = query_records(records, {"q": "BLUE ARCHIVE"})
+        self.assertEqual([r["id"] for r in result["items"]], ["a"])
+        self.assertEqual(relevance_score(records[0], tokenize("BLUE ARCHIVE")), 9)
+        self.assertEqual(query_records(records, {"q": "archive absent"})["total"], 0)
+
+    def test_era_boundaries_use_start_year_and_keep_unknown_separate(self):
+        records = [make_record("a", year=1899, year_end=1901),
+                   make_record("b", year=1900), make_record("c", year=1949),
+                   make_record("d", year=1950), make_record("e", year=2100),
+                   make_record("f", year=None, date="1900")]
+        for era, expected in (("", ["a", "b", "c", "d", "e", "f"]),
+                              ("before-1900", ["a"]), ("1900-1949", ["b", "c"]),
+                              ("1950-present", ["d", "e"]), ("unknown", ["f"])):
+            with self.subTest(era=era):
+                result = query_records(records, {"era": era})
+                self.assertEqual([r["id"] for r in result["items"]], expected)
+                self.assertEqual(result["stats"]["total"], len(expected))
+
+    def test_era_combines_with_query_year_range_and_image_filter(self):
+        records = [make_record("a", title="Blue sample", year=1900, year_end=1910,
+                               image_url="https://example.org/a.jpg"),
+                   make_record("b", title="Blue sample", year=1905),
+                   make_record("c", title="Red sample", year=1905,
+                               image_url="https://example.org/c.jpg")]
+        result = query_records(records, {"era": "1900-1949", "q": "blue",
+                                        "year_start": 1910, "year_end": 1910,
+                                        "image_only": "true"})
+        self.assertEqual([r["id"] for r in result["items"]], ["a"])
+        self.assertEqual(query_records(records, {"era": "unknown", "year_start": 1900})["total"], 0)
+
+    def test_all_group_options_select_the_expected_object_family(self):
+        records = [make_record("a", title="Steel knife"),
+                   make_record("b", title="Landscape painting"),
+                   make_record("c", title="Storage container"),
+                   make_record("d", title="Studio portrait"),
+                   make_record("e", title="Festival banner")]
+        for record in records:
+            record["category"] = "Specimen"
+            record["all_categories"] = ["Specimen"]
+        for group, expected in (("tools", ["a"]), ("artworks", ["b"]),
+                                ("daily-life", ["c"]),
+                                ("photographs", ["d"]), ("community", ["e"]),
+                                ("", ["a", "b", "c", "d", "e"])):
+            with self.subTest(group=group):
+                result = query_records(records, {"group": group})
+                self.assertEqual([r["id"] for r in result["items"]], expected)
+
+    def test_group_recognises_catalogue_fields_but_not_description(self):
+        records = [make_record("a", category="TOOL"),
+                   make_record("b", collection="Equipment collection"),
+                   make_record("c", all_categories=["Implement"]),
+                   make_record("d", materials=["Axe component"]),
+                   make_record("e", description="Tool and equipment")]
+        result = query_records(records, {"group": "tools"})
+        self.assertEqual([r["id"] for r in result["items"]], ["a", "b", "c", "d"])
+
+    def test_group_filter_combines_with_other_filters_before_stats_and_pagination(self):
+        records = [make_record("a", title="Steel knife", category="Tool", year=1900,
+                               image_url="https://example.org/a.jpg"),
+                   make_record("b", title="Steel axe", category="Tool", year=1905,
+                               image_url="https://example.org/b.jpg"),
+                   make_record("c", title="Steel knife", category="Tool", year=1950,
+                               image_url="https://example.org/c.jpg"),
+                   make_record("d", title="Steel knife", category="Tool", year=1905)]
+        result = query_records(records, {"group": "tools", "era": "1900-1949",
+                                        "q": "steel", "category": "Tool",
+                                        "image_only": "true", "page_size": 1, "page": 2})
+        self.assertEqual([r["id"] for r in result["items"]], ["b"])
+        self.assertEqual((result["total"], result["pages"], result["stats"]["total"]), (2, 2, 2))
+        self.assertEqual(result["facets"], query_records(records, {})["facets"])
+
+    def test_era_and_group_reject_invalid_types_labels_and_duplicate_values(self):
+        records = [make_record()]
+        for params in ({"era": "1900"}, {"era": True}, {"era": ["unknown", "unknown"]},
+                       {"group": "invalid"}, {"group": True}, {"group": ["tools", "tools"]}):
+            with self.subTest(params=params), self.assertRaises(QueryError):
+                query_records(records, params)
+        self.assertEqual(query_records(records, {"era": ["1900-1949"], "group": [""]})["total"], 1)
 
     def test_punctuation_only_query_matches_complete_catalogue(self):
         records = [make_record("b"), make_record("a")]

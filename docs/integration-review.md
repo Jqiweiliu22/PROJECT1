@@ -21,6 +21,11 @@ are not modified; returned items are deep copies.
 
 Parameters can be ordinary scalar values or single-value lists from `parse_qs`.
 Repeated values and invalid types are rejected. An empty result has page 1 of 1.
+Search uses seven weighted fields: title 8, category 4, materials 3, places 2,
+collection 1, date 1 and source name 1. Era filters use the starting year,
+whereas numeric year filters use inclusive interval overlap. Collection-type
+groups use keyword matches in catalogue fields and are broad browsing aids,
+not authoritative institutional classifications.
 
 ## Response
 
@@ -32,7 +37,9 @@ sources from the full dataset.
 
 ## Validation and next work
 
-34 core tests pass. The root `test_core.py` file has been removed,
+41 core tests pass, including independent matching for all seven search fields,
+era boundaries, collection-type groups, combined filters and invalid parameters.
+The root `test_core.py` file has been removed,
 so its eight API tests are not currently retained in the repository.
 Current automated validation covers the core; API test coverage needs
 restoring separately.
@@ -40,6 +47,10 @@ The real dataset loads with 316 records, 314 nonempty image URLs, 44 unknown
 starting years and no missing IDs, missing titles or duplicate IDs.
 
 The existing server already imports the required functions and error classes.
-Browser flows, external images, deployment and report work remain outstanding.
+The application is publicly deployed at
+https://collection-explorer-93n8.onrender.com. AI checked basic public static-file
+and API availability on 2026-10-10. A report draft has been prepared separately;
+final team review, browser workflows, mobile checks and external image loading
+remain outstanding.
 Image and language use conditions are documented separately in the source files;
 passing code tests does not resolve those conditions.
