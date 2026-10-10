@@ -133,7 +133,7 @@ async function detail(id) {
     }
     if (!published.children.length) sourceSection(published,'About this record','No additional descriptive text was supplied in this API snapshot. Use the museum record below to check for later updates.');
     text.append(published);
-    const actions=node('div','detail-actions'); const original=node('a','primary','View source information');original.href=external(r.source_url);original.target='_blank';original.rel='noopener noreferrer';actions.append(original);text.append(actions,node('p','image-credit',`${r.source_copyright||`Original titles and catalogue fields © ${r.source_name}`}. Historical wording is retained.`));
+    const actions=node('div','detail-actions'); const sourceHref=external(r.source_url); const sourceIsDataset=/catalogue\.data\.wa\.gov\.au/i.test(sourceHref); const original=node('a','primary',sourceIsDataset?'View source dataset':'View source record');original.href=sourceHref;original.target='_blank';original.rel='noopener noreferrer';actions.append(original);text.append(actions,node('p','image-credit',`${r.source_copyright||`Original titles and catalogue fields © ${r.source_name}`}. Historical wording is retained.`));
     layout.append(visualColumn,text);target.replaceChildren(layout);heading.focus({preventScroll:true});
   } catch(error) { if (seq !== detailRequest) return; target.replaceChildren(node('h1','detail-heading','Record not found'),node('p','',`Return to the collection and choose a record. ${error.message}`)); }
 }

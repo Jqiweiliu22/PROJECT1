@@ -461,3 +461,20 @@ Leyi Jiang reviewed the website wording and requested precise replacements so th
 
 ### Current limitations
 Both students still need to run the 41-test command personally and record the date, command and result. They should also complete and record one final public-site workflow before submission. Most SLWA records still use a dataset-level source link rather than a verified item page, so users must check source information and image conditions before reuse.
+
+## Entry 19: Scope and local-language wording review
+
+### Purpose
+Align the public website with the assignment's requirement for a specific user and purpose without implying that the project represents every Aboriginal or Torres Strait Islander culture.
+
+### AI assistance
+At Leyi Jiang's direction, AI helped revise the landing-page scope, catalogue heading, Insights limitation, local-language explanation, NMA attribution and labels for dataset-level source links.
+
+### Review and verification
+The project brief was re-read before the changes. It explicitly permits a Collection Explorer and requires a suitable, bounded purpose rather than comprehensive cultural coverage. The revised wording describes a selected catalogue sample and treats five Noongar words as small interface labels, not a full translation or language-learning feature.
+
+### Changes made by the team
+Leyi Jiang chose to retain the limited Noongar labels as an acknowledgement of the local Western Australian context while reducing the prominence of the language claim. Source links and the lack of institutional endorsement remain visible.
+
+### Current limitations
+This wording change does not establish permission to reuse the Noongar labels or every image. The team must retain source evidence, seek facilitator guidance where permission remains unclear, and remove uncertain material if it cannot be cleared for the final public submission.
