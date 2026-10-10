@@ -7,6 +7,7 @@ const fieldNames = ['q', 'source', 'category', 'material', 'place', 'year_start'
 const form = $('#search-form');
 function node(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text !== undefined) el.textContent = text; return el; }
 function external(url) { try { const parsed = new URL(url); return parsed.protocol === 'https:' ? parsed.href : ''; } catch { return ''; } }
+function rightsLabel(record) { const value=String(record.image_licence||'').trim(); return value?`Source rights label: ${value}`:'Check the source record for image conditions'; }
 async function api(path) {
   const response = await fetch(path, {headers: {'Accept': 'application/json'}});
   const payload = await response.json();
@@ -41,7 +42,7 @@ function card(record, index) {
   if (record.image_url) cover = imagePanel(record, 'record-cover');
   else { cover = node('div', 'record-cover'); cover.append(node('span', 'cover-label', record.identifier || record.id), node('span', 'cover-number', String(index + 1 + (state.page - 1) * 12).padStart(2, '0')), node('span', 'cover-category', record.category)); }
   const body = node('div', 'record-body'); body.append(node('div', 'record-meta', `${record.category} · ${record.date || 'Date not recorded'}`), node('h3', 'record-title', record.title));
-  const bottom = node('div', 'record-bottom'); bottom.append(node('span', '', record.source_name), node('span', '', 'View record')); body.append(bottom); if(record.image_url)body.append(node('small','card-credit',`${record.source_name.includes('Western Australia')?'SLWA':'NMA'} · ${record.image_licence}`)); a.append(cover, body); return a;
+  const bottom = node('div', 'record-bottom'); bottom.append(node('span', '', record.source_name), node('span', '', 'View record')); body.append(bottom); if(record.image_url)body.append(node('small','card-credit',`${record.source_name.includes('Western Australia')?'SLWA':'NMA'} · ${rightsLabel(record)}`)); a.append(cover, body); return a;
 }
 function populateFacets(facets) {
   [['source','sources','All sources'],['category','categories','All categories'],['material','materials','All materials'],['place','places','All places']].forEach(([id, key, label]) => {
@@ -62,7 +63,7 @@ async function search({resetPage = true, scroll = false} = {}) {
     if (state.imageOnly) $('#collection-grid').replaceChildren(...result.items.map(card)); else renderTable(result.items); $('#empty').hidden = result.total !== 0;
     const start = result.total ? (result.page - 1) * result.page_size + 1 : 0;
     const end = Math.min(result.page * result.page_size, result.total);
-    $('#results-summary').textContent = `Illustrated collection · ${result.total} records · ${start}–${end}`;
+    $('#results-summary').textContent = `Illustrated collection · ${result.total} ${result.total === 1 ? 'record' : 'records'} · ${start}–${end}`;
     $('#page-info').textContent = `Page ${result.page} of ${Math.max(result.pages, 1)}`;
     $('#previous').disabled = result.page <= 1; $('#next').disabled = result.page >= result.pages;
     message(''); renderStats(result.stats);
@@ -108,8 +109,8 @@ async function detail(id) {
   try {
     const r = await api(`/api/objects/${encodeURIComponent(id)}`); if (seq !== detailRequest) return;
     const layout = node('div','detail-layout'); const visualColumn = node('div'); visualColumn.append(imagePanel(r,'detail-visual'));
-    if(r.image_url) { const zoom=node('button','zoom-button','Enlarge image');zoom.type='button';zoom.addEventListener('click',()=>{$('#zoom-image').src=external(r.image_large_url||r.image_url);$('#zoom-image').alt=r.title;$('#image-dialog-title').textContent=r.title;$('#zoom-credit').textContent=`${r.source_name} · ${r.image_licence}`;$('#image-dialog').showModal();});visualColumn.append(zoom); }
-    if (r.image_url) { const credit = node('p','image-credit',`Image: ${r.source_name} · ${r.image_licence} · `); const link=node('a','','Original image');link.href=external(r.image_url);link.target='_blank';link.rel='noopener noreferrer';credit.append(link);visualColumn.append(credit); }
+    if(r.image_url) { const zoom=node('button','zoom-button','Enlarge image');zoom.type='button';zoom.addEventListener('click',()=>{$('#zoom-image').src=external(r.image_large_url||r.image_url);$('#zoom-image').alt=r.title;$('#image-dialog-title').textContent=r.title;$('#zoom-credit').textContent=`${r.source_name} · ${rightsLabel(r)}`;$('#image-dialog').showModal();});visualColumn.append(zoom); }
+    if (r.image_url) { const credit = node('p','image-credit',`Image: ${r.source_name} · ${rightsLabel(r)} · `); const link=node('a','','Original image');link.href=external(r.image_url);link.target='_blank';link.rel='noopener noreferrer';credit.append(link);visualColumn.append(credit); }
     else visualColumn.append(node('p','image-credit','This record contains public catalogue text. Follow the source for images and context.'));
     const text = node('article'); text.append(node('p','eyebrow',`SOURCE RECORD / ${r.identifier||r.id}`)); const heading = node('h1','detail-heading',r.title);heading.id='detail-heading';heading.tabIndex=-1;text.append(heading);
     const dl = node('dl','detail-facts');

@@ -444,3 +444,20 @@ Prepared the report draft for student review and completion.
 
 ### Current limitations
 Student review, formal identities, deployment evidence and final browser checks remain outstanding.
+
+## Entry 18: Final interface wording and current verification
+
+### Purpose
+Align the public-facing wording with the current dataset, source documentation and student-project scope.
+
+### AI assistance
+At Leyi Jiang's direction, AI helped refine the About-page source and permission wording, the footer, the collection count sentence and the image-rights labels. AI also helped correct a spelling error and align the stated visual reference with the National Library of China.
+
+### Review and verification
+On 10 October 2026, AI-assisted checks ran all 41 automated tests successfully. The data checker confirmed 316 records, 314 non-empty image URLs and 44 records with unknown years. Local browser checks covered search, combined filters, a record detail page, Insights, a no-results state, invalid year input and the About page. The deployed site also loaded successfully and returned the expected result for a sample search. These AI-assisted checks do not replace the two students' own dated verification evidence.
+
+### Changes made by the team
+Leyi Jiang reviewed the website wording and requested precise replacements so that the interface describes the available content accurately and does not imply that every image has the same reuse licence. The project continues to distinguish dataset or catalogue-text licences from item-level image conditions.
+
+### Current limitations
+Both students still need to run the 41-test command personally and record the date, command and result. They should also complete and record one final public-site workflow before submission. Most SLWA records still use a dataset-level source link rather than a verified item page, so users must check source information and image conditions before reuse.
